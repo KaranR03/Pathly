@@ -30,7 +30,7 @@ export const GENERATED_JOBS: Job[] = [
       "Team Leadership"
     ],
     "preferred": [
-      "A/B Testing",
+      "Cloud Computing Essentials",
       "Data Analysis",
       "Conversion Rate Optimization"
     ],
@@ -222,7 +222,7 @@ export const GENERATED_JOBS: Job[] = [
       "Python",
       "SQL",
       "Statistical Modeling",
-      "A/B Testing",
+      "Cloud Computing Essentials",
       "Product Analytics"
     ],
     "preferred": [
@@ -256,7 +256,7 @@ export const GENERATED_JOBS: Job[] = [
       "Performance Marketing",
       "Copywriting",
       "Graphic Design",
-      "A/B Testing"
+      "Cloud Computing Essentials"
     ],
     "preferred": [
       "Video Production",
@@ -523,7 +523,7 @@ export const GENERATED_JOBS: Job[] = [
     "preferred": [
       "Python",
       "R (Programming Language)",
-      "A/B Testing",
+      "Cloud Computing Essentials",
       "Marketing Analytics"
     ],
     "description": "As a Senior Analytics Specialist, you will leverage advanced analytical techniques to uncover insights and drive strategic business decisions. This position requires translating complex data into actionable recommendations for various business units."
@@ -556,7 +556,7 @@ export const GENERATED_JOBS: Job[] = [
     ],
     "preferred": [
       "Cloud platforms (AWS/Azure/GCP)",
-      "A/B Testing",
+      "Cloud Computing Essentials",
       "Machine Learning"
     ],
     "description": "This role involves leading complex data analysis projects to provide actionable insights for Optus's telecommunications business. You will be responsible for designing data models, creating dashboards, and presenting findings to senior leadership to drive strategic decisions."
@@ -716,7 +716,7 @@ export const GENERATED_JOBS: Job[] = [
     ],
     "preferred": [
       "Cloud platforms (AWS/Azure/GCP)",
-      "A/B Testing",
+      "Cloud Computing Essentials",
       "Dashboards (Tableau/Power BI)"
     ],
     "description": "This entry-level role involves working with large datasets to extract insights and build predictive models. You will collaborate with product and engineering teams to address business problems through data-driven solutions."
@@ -749,7 +749,7 @@ export const GENERATED_JOBS: Job[] = [
     ],
     "preferred": [
       "Cloud platforms (AWS/Azure/GCP)",
-      "A/B Testing",
+      "Cloud Computing Essentials",
       "Dashboards (Tableau/Power BI)"
     ],
     "description": "This entry-level role involves working with large datasets to extract insights and build predictive models. You will collaborate with product and engineering teams to address business problems through data-driven solutions."
@@ -784,7 +784,7 @@ export const GENERATED_JOBS: Job[] = [
     "preferred": [
       "Generative AI",
       "Large Language Models (LLMs)",
-      "A/B Testing"
+      "Cloud Computing Essentials"
     ],
     "description": "This role focuses on designing, building, and deploying advanced AI solutions for Culture Amp's platform. You will be responsible for researching cutting-edge AI techniques and integrating them into production systems to enhance product capabilities."
   },
@@ -1235,7 +1235,7 @@ export const GENERATED_JOBS: Job[] = [
       "Product Design",
       "UX/UI Design",
       "Growth Design",
-      "A/B Testing",
+      "Cloud Computing Essentials",
       "User Journey Mapping",
       "Figma/Sketch"
     ],
@@ -1371,7 +1371,7 @@ export const GENERATED_JOBS: Job[] = [
       "SQL",
       "Machine Learning",
       "Statistical modelling",
-      "A/B Testing",
+      "Cloud Computing Essentials",
       "Fraud detection",
       "Data storytelling"
     ],
@@ -1446,7 +1446,7 @@ export const GENERATED_JOBS: Job[] = [
     "preferred": [
       "User testing",
       "Interaction design",
-      "A/B Testing"
+      "Cloud Computing Essentials"
     ],
     "description": "The Staff Product Designer is responsible for creating intuitive and engaging user experiences across Linktree's product offerings. This involves conducting user research, designing interfaces, and collaborating closely with product and engineering teams."
   },
@@ -1682,7 +1682,7 @@ export const GENERATED_JOBS: Job[] = [
     "preferred": [
       "Blockchain (understanding)",
       "UX Design (basic)",
-      "A/B Testing"
+      "Cloud Computing Essentials"
     ],
     "description": "As a junior product manager, you will assist in defining and executing the product strategy for Immutable's Web3 ecosystem. This involves gathering requirements, collaborating with engineering and design teams, and ensuring products meet user needs and business goals."
   },
@@ -1805,7 +1805,7 @@ export const GENERATED_JOBS: Job[] = [
     "companySize": "Medium",
     "required": [
       "Growth Hacking",
-      "A/B Testing",
+      "Cloud Computing Essentials",
       "Conversion Rate Optimisation (CRO)",
       "Digital Marketing",
       "User Acquisition",

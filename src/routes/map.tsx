@@ -92,9 +92,6 @@ function MapPage() {
   return (
     <AppShell bare>
       <div className="relative h-[calc(100vh-3.5rem)] w-full overflow-hidden">
-        <div className="pointer-events-auto absolute top-4 left-4 z-30">
-          <BackBar floating />
-        </div>
         <MapCanvas
           jobs={filteredJobs}
           matchFor={matchFor}
@@ -112,6 +109,9 @@ function MapPage() {
         <div className="pointer-events-none absolute inset-x-0 top-0 z-20 p-3 sm:p-4">
           <div className="pointer-events-auto mx-auto flex w-full max-w-[1400px] flex-col gap-2.5">
             <div className="flex items-start gap-2">
+              <div className="shrink-0">
+                <BackBar floating />
+              </div>
               <div className="min-w-0 flex-1 sm:max-w-md">
                 <SearchBar onFocusCity={setFocus} />
               </div>

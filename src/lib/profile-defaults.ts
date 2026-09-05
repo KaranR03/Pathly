@@ -11,6 +11,10 @@ export interface Profile {
   maxCommuteMinutes: number;
   skills: string[];
   resumeName: string | null;
+  linkedinUrl: string | null;
+  githubUrl: string | null;
+  portfolioUrl: string | null;
+  onboardingCompleted: boolean;
 }
 
 export type ProfileAccessMode = "anonymous" | "guest" | "member";
@@ -26,6 +30,10 @@ export const EMPTY_PROFILE: Profile = {
   maxCommuteMinutes: 45,
   skills: [],
   resumeName: null,
+  linkedinUrl: null,
+  githubUrl: null,
+  portfolioUrl: null,
+  onboardingCompleted: false,
 };
 
 export const DEMO_PROFILE: Profile = {
@@ -52,6 +60,10 @@ export const DEMO_PROFILE: Profile = {
     "Git",
   ],
   resumeName: null,
+  linkedinUrl: null,
+  githubUrl: null,
+  portfolioUrl: null,
+  onboardingCompleted: true,
 };
 
 export function createProfileForAccessMode(mode: ProfileAccessMode): Profile {

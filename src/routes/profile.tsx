@@ -1,6 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { FileText, Plus, Sparkles, Upload, X } from "lucide-react";
+import {
+  FileText,
+  Github,
+  Globe,
+  Linkedin,
+  Plus,
+  Sparkles,
+  Upload,
+  X,
+} from "lucide-react";
 import { useRef, useState } from "react";
 import { parseCv } from "@/lib/cv.functions";
 
@@ -34,7 +43,8 @@ export const Route = createFileRoute("/profile")({
       { property: "og:title", content: "Your Profile — Pathly" },
       {
         property: "og:description",
-        content: "Your skills, preferences and CV — the inputs behind every Pathly match.",
+        content:
+          "Your skills, preferences and CV — the inputs behind every Pathly match.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -70,7 +80,9 @@ function ProfilePage() {
 
   const handleUpload = async (file: File) => {
     if (file.size > 8 * 1024 * 1024) {
-      toast.error("That file is too large", { description: "Please upload a CV under 8 MB." });
+      toast.error("That file is too large", {
+        description: "Please upload a CV under 8 MB.",
+      });
       return;
     }
     setAnalysing(true);
@@ -87,7 +99,8 @@ function ProfilePage() {
       });
     } catch (err) {
       toast.error("Couldn't analyse that CV", {
-        description: err instanceof Error ? err.message : "Please try a different file.",
+        description:
+          err instanceof Error ? err.message : "Please try a different file.",
       });
     } finally {
       setAnalysing(false);
@@ -100,10 +113,12 @@ function ProfilePage() {
         <p className="text-[12px] font-medium tracking-wide text-muted-foreground uppercase">
           Profile
         </p>
-        <h1 className="mt-1.5 text-[28px] font-semibold sm:text-[34px]">{profile.name}</h1>
+        <h1 className="mt-1.5 text-[28px] font-semibold sm:text-[34px]">
+          {profile.name}
+        </h1>
         <p className="mt-2 text-[14px] text-muted-foreground">
-          {profile.careerGoal} · {profile.location} · {savedJobIds.length} saved ·{" "}
-          {applications.length} applications
+          {profile.careerGoal} · {profile.location} · {savedJobIds.length} saved
+          · {applications.length} applications
         </p>
 
         <div className="mt-7 grid gap-5 lg:grid-cols-[1fr_1fr]">
@@ -129,8 +144,8 @@ function ProfilePage() {
                 </div>
               ) : (
                 <p className="text-[13px] text-muted-foreground">
-                  Upload your CV (PDF, .docx or .txt) and Pathly will read your real skills and
-                  experience.
+                  Upload your CV (PDF, .docx or .txt) and Pathly will read your
+                  real skills and experience.
                 </p>
               )}
               <div className="mt-3 flex justify-center gap-2">
@@ -140,14 +155,14 @@ function ProfilePage() {
                   onClick={() => fileRef.current?.click()}
                   disabled={analysing}
                 >
-                  <Upload className="size-4" /> {analysing ? "Reading your CV…" : "Upload CV"}
+                  <Upload className="size-4" />{" "}
+                  {analysing ? "Reading your CV…" : "Upload CV"}
                 </Button>
               </div>
               <p className="mt-2 text-[11px] text-muted-foreground">
                 Text-based files only — scanned images can't be read.
               </p>
             </div>
-
 
             {detected.length > 0 && (
               <div className="animate-rise mt-4">
@@ -223,9 +238,60 @@ function ProfilePage() {
               </div>
               {gapAnalysis.gaps.length > 0 && (
                 <p className="mt-3 text-[12px] text-muted-foreground">
-                  Commonly missing near you: {gapAnalysis.gaps.slice(0, 3).map((g) => g.skill).join(", ")}
+                  Commonly missing near you:{" "}
+                  {gapAnalysis.gaps
+                    .slice(0, 3)
+                    .map((g) => g.skill)
+                    .join(", ")}
                 </p>
               )}
+            </div>
+
+            <div className="mt-5 border-t border-border/60 pt-5">
+              <p className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+                Profile links
+              </p>
+              <div className="mt-3 space-y-3">
+                <div className="grid gap-1.5">
+                  <Label className="flex items-center gap-1.5 text-[12px]">
+                    <Linkedin className="size-3.5" /> LinkedIn
+                  </Label>
+                  <Input
+                    value={profile.linkedinUrl ?? ""}
+                    onChange={(e) =>
+                      updateProfile({ linkedinUrl: e.target.value || null })
+                    }
+                    placeholder="https://linkedin.com/in/your-name"
+                    className="h-9 rounded-xl"
+                  />
+                </div>
+                <div className="grid gap-1.5">
+                  <Label className="flex items-center gap-1.5 text-[12px]">
+                    <Github className="size-3.5" /> GitHub
+                  </Label>
+                  <Input
+                    value={profile.githubUrl ?? ""}
+                    onChange={(e) =>
+                      updateProfile({ githubUrl: e.target.value || null })
+                    }
+                    placeholder="https://github.com/your-name"
+                    className="h-9 rounded-xl"
+                  />
+                </div>
+                <div className="grid gap-1.5">
+                  <Label className="flex items-center gap-1.5 text-[12px]">
+                    <Globe className="size-3.5" /> Portfolio
+                  </Label>
+                  <Input
+                    value={profile.portfolioUrl ?? ""}
+                    onChange={(e) =>
+                      updateProfile({ portfolioUrl: e.target.value || null })
+                    }
+                    placeholder="https://your-portfolio.com"
+                    className="h-9 rounded-xl"
+                  />
+                </div>
+              </div>
             </div>
           </section>
 
@@ -254,7 +320,9 @@ function ProfilePage() {
                 <Label className="text-[12px]">Career interest</Label>
                 <Input
                   value={profile.careerGoal}
-                  onChange={(e) => updateProfile({ careerGoal: e.target.value })}
+                  onChange={(e) =>
+                    updateProfile({ careerGoal: e.target.value })
+                  }
                   className="h-9 rounded-xl"
                 />
               </div>
@@ -280,13 +348,19 @@ function ProfilePage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {(["No experience", "Entry level", "Junior", "Mid-level", "Senior"] as const).map(
-                      (l) => (
-                        <SelectItem key={l} value={l}>
-                          {l}
-                        </SelectItem>
-                      ),
-                    )}
+                    {(
+                      [
+                        "No experience",
+                        "Entry level",
+                        "Junior",
+                        "Mid-level",
+                        "Senior",
+                      ] as const
+                    ).map((l) => (
+                      <SelectItem key={l} value={l}>
+                        {l}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -302,7 +376,9 @@ function ProfilePage() {
                         onClick={() =>
                           updateProfile({
                             preferredIndustries: on
-                              ? profile.preferredIndustries.filter((x) => x !== i)
+                              ? profile.preferredIndustries.filter(
+                                  (x) => x !== i,
+                                )
                               : [...profile.preferredIndustries, i],
                           })
                         }
@@ -324,7 +400,14 @@ function ProfilePage() {
                 <Label className="text-[12px]">Preferred job types</Label>
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {(
-                    ["Full-time", "Part-time", "Casual", "Contract", "Internship", "Graduate"] as const
+                    [
+                      "Full-time",
+                      "Part-time",
+                      "Casual",
+                      "Contract",
+                      "Internship",
+                      "Graduate",
+                    ] as const
                   ).map((t) => {
                     const on = profile.preferredJobTypes.includes(t);
                     return (
@@ -364,7 +447,9 @@ function ProfilePage() {
                   min={10}
                   max={120}
                   step={5}
-                  onValueChange={([v]) => updateProfile({ maxCommuteMinutes: v ?? 45 })}
+                  onValueChange={([v]) =>
+                    updateProfile({ maxCommuteMinutes: v ?? 45 })
+                  }
                 />
               </div>
             </div>

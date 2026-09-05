@@ -17,7 +17,8 @@ export const Route = createFileRoute("/auth")({
       { property: "og:title", content: "Sign in to Pathly" },
       {
         property: "og:description",
-        content: "Save jobs, track applications and close skill gaps on Australia's job map.",
+        content:
+          "Save jobs, track applications and close skill gaps on Australia's job map.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -28,7 +29,8 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const { session, isGuest, signIn, signUp, signInWithGoogle, continueAsGuest } = useAuth();
+  const { session, signIn, signUp, signInWithGoogle, continueAsGuest } =
+    useAuth();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -36,8 +38,8 @@ function AuthPage() {
   const [busy, setBusy] = useState<null | "email" | "google" | "guest">(null);
 
   useEffect(() => {
-    if (session || isGuest) navigate({ to: "/dashboard", replace: true });
-  }, [session, isGuest, navigate]);
+    if (session) navigate({ to: "/dashboard", replace: true });
+  }, [session, navigate]);
 
   async function onSubmit(e: React.FormEvent): Promise<void> {
     e.preventDefault();
@@ -53,7 +55,11 @@ function AuthPage() {
       navigate({ to: "/dashboard", replace: true });
       return;
     }
-    const { error, needsConfirmation } = await signUp(name.trim() || "New member", email.trim(), password);
+    const { error, needsConfirmation } = await signUp(
+      name.trim() || "New member",
+      email.trim(),
+      password,
+    );
     setBusy(null);
     if (error) {
       toast.error(error);
@@ -85,7 +91,9 @@ function AuthPage() {
             <Wordmark />
           </div>
           <h1 className="mt-6 text-center text-[26px] font-semibold tracking-tight">
-            {mode === "signin" ? "Sign in to Pathly" : "Create your Pathly account"}
+            {mode === "signin"
+              ? "Sign in to Pathly"
+              : "Create your Pathly account"}
           </h1>
           <p className="mt-2 text-center text-sm text-muted-foreground">
             Keep your profile, saved jobs and applications in one place.
@@ -150,7 +158,9 @@ function AuthPage() {
                 required
                 minLength={6}
                 placeholder="Password"
-                autoComplete={mode === "signin" ? "current-password" : "new-password"}
+                autoComplete={
+                  mode === "signin" ? "current-password" : "new-password"
+                }
                 className="h-11 w-full rounded-xl border border-border bg-background px-3.5 text-[14px] outline-none focus:border-foreground/30"
               />
               <button
@@ -191,8 +201,8 @@ function AuthPage() {
             Continue as guest
           </button>
           <p className="mt-3 text-center text-xs text-muted-foreground">
-            Guest mode explores the full demo with the Alex Morgan profile. Nothing is saved to an
-            account.
+            Guest mode explores the full demo with the Alex Morgan profile.
+            Nothing is saved to an account.
           </p>
         </div>
       </main>

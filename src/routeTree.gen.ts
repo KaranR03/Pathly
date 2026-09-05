@@ -17,6 +17,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as EmployerRouteImport } from './routes/employer'
 import { Route as LearningRouteImport } from './routes/learning'
 import { Route as MapRouteImport } from './routes/map'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as ProfileRouteImport } from './routes/profile'
 
 const IndexRoute = IndexRouteImport.update({
@@ -59,6 +60,11 @@ const MapRoute = MapRouteImport.update({
   path: '/map',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -74,6 +80,7 @@ export interface FileRoutesByFullPath {
   '/employer': typeof EmployerRoute
   '/learning': typeof LearningRoute
   '/map': typeof MapRoute
+  '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
 }
 export interface FileRoutesByTo {
@@ -85,6 +92,7 @@ export interface FileRoutesByTo {
   '/employer': typeof EmployerRoute
   '/learning': typeof LearningRoute
   '/map': typeof MapRoute
+  '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
 }
 export interface FileRoutesById {
@@ -97,6 +105,7 @@ export interface FileRoutesById {
   '/employer': typeof EmployerRoute
   '/learning': typeof LearningRoute
   '/map': typeof MapRoute
+  '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
 }
 export interface FileRouteTypes {
@@ -110,6 +119,7 @@ export interface FileRouteTypes {
     | '/employer'
     | '/learning'
     | '/map'
+    | '/onboarding'
     | '/profile'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -121,6 +131,7 @@ export interface FileRouteTypes {
     | '/employer'
     | '/learning'
     | '/map'
+    | '/onboarding'
     | '/profile'
   id:
     | '__root__'
@@ -132,6 +143,7 @@ export interface FileRouteTypes {
     | '/employer'
     | '/learning'
     | '/map'
+    | '/onboarding'
     | '/profile'
   fileRoutesById: FileRoutesById
 }
@@ -144,6 +156,7 @@ export interface RootRouteChildren {
   EmployerRoute: typeof EmployerRoute
   LearningRoute: typeof LearningRoute
   MapRoute: typeof MapRoute
+  OnboardingRoute: typeof OnboardingRoute
   ProfileRoute: typeof ProfileRoute
 }
 
@@ -205,6 +218,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MapRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile': {
       id: '/profile'
       path: '/profile'
@@ -224,6 +244,7 @@ const rootRouteChildren: RootRouteChildren = {
   EmployerRoute: EmployerRoute,
   LearningRoute: LearningRoute,
   MapRoute: MapRoute,
+  OnboardingRoute: OnboardingRoute,
   ProfileRoute: ProfileRoute,
 }
 export const routeTree = rootRouteImport
