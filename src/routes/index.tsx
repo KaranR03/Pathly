@@ -1,11 +1,11 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { ArrowRight, Upload } from "lucide-react";
-import { AUSTRALIA_VIEW, CITIES, JOBS } from "@/data/jobs";
-import { usePathly } from "@/lib/pathly-store";
+import { AUSTRALIA_VIEW, CITIES, JOBS, type Job } from "@/data/jobs";
+import { analyseGaps, matchJob } from "@/lib/matching";
+import { DEMO_PROFILE } from "@/lib/profile-defaults";
 import { MapCanvas } from "@/components/pathly/MapCanvas";
 import { Wordmark } from "@/components/pathly/AppShell";
 import { Button } from "@/components/ui/button";
-import blissAsset from "@/assets/bliss.png.asset.json";
 
 
 export const Route = createFileRoute("/")({
@@ -21,7 +21,7 @@ export const Route = createFileRoute("/")({
       {
         property: "og:description",
         content:
-          "An interactive map of Australian jobs with personalised AI match scores, skill gap analysis and a career simulator.",
+          "An interactive demo map of Australian jobs with profile-based match scores, skill gap analysis and a career simulator.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -31,26 +31,30 @@ export const Route = createFileRoute("/")({
 });
 
 const STEPS = [
-  { title: "Discover", copy: "Find opportunities around you on a live map of Australia." },
-  { title: "Match", copy: "AI shows how strongly your skills align with every role." },
+  { title: "Discover", copy: "Explore a curated demo map of Australian opportunities." },
+  { title: "Match", copy: "Pathly shows how your profile aligns with every role." },
   { title: "Grow", copy: "See the specific skills holding you back right now." },
   { title: "Unlock", copy: "Learn them and watch more opportunities light up." },
-  { title: "Apply", copy: "Apply directly and track every application in one place." },
+  { title: "Track", copy: "Keep the opportunities you are pursuing in one place." },
 ];
 
 function Landing() {
-  const { matchFor } = usePathly();
+  const demoCandidate = {
+    skills: DEMO_PROFILE.skills,
+    yearsExperience: DEMO_PROFILE.yearsExperience,
+    preferredIndustries: DEMO_PROFILE.preferredIndustries,
+  };
+  const matchFor = (job: Job) => matchJob(job, demoCandidate);
+  const gapAnalysis = analyseGaps(JOBS, demoCandidate);
   const preview = JOBS.filter((j) => ["Brisbane", "Sydney", "Melbourne", "Perth"].includes(j.city));
+  const topGap = gapAnalysis.gaps[0];
 
   return (
     <div className="min-h-screen bg-background">
       <div className="relative isolate overflow-hidden">
         <div className="pointer-events-none absolute inset-0 -z-10">
-          <img
-            src={blissAsset.url}
-            alt="Rolling green hill under a bright blue sky"
-            className="animate-bliss-drift h-full w-full object-cover"
-          />
+          <div className="absolute inset-0 bg-[linear-gradient(145deg,#dbeafe_0%,#e0f2fe_42%,#dcfce7_100%)]" />
+          <div className="absolute inset-x-0 bottom-0 h-2/3 rounded-[50%_50%_0_0] bg-emerald-100/70 blur-2xl" />
           <div className="animate-bliss-sheen absolute inset-0 bg-gradient-to-tr from-transparent via-white/40 to-transparent" />
           <div className="absolute inset-0 bg-background/45" />
           <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
@@ -120,7 +124,10 @@ function Landing() {
           />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-wrap items-center gap-2 p-4">
             <span className="glass rounded-full px-3 py-1.5 text-[12px] font-medium">
-              {JOBS.length} live opportunities
+              {JOBS.length} curated opportunities
+            </span>
+            <span className="glass rounded-full px-3 py-1.5 text-[12px] font-medium text-muted-foreground">
+              Demo data
             </span>
             {CITIES.slice(0, 4).map((c) => (
               <span
@@ -166,8 +173,9 @@ function Landing() {
       <section className="mx-auto w-full max-w-[1200px] px-4 pb-20 sm:px-6">
         <div className="rounded-[32px] border border-border/70 bg-card p-8 shadow-[var(--shadow-soft)] sm:p-12">
           <h2 className="max-w-2xl text-[24px] leading-tight font-semibold sm:text-[32px]">
-            "You currently strongly match 34 Data Analyst opportunities around Brisbane. Learning
-            Power BI could take that to 65."
+            {topGap
+              ? `With the current demo profile, Pathly finds ${gapAnalysis.strongCount} strong matches. Learning ${topGap.skill} could bring that to ${topGap.projectedStrong}.`
+              : `With the current demo profile, Pathly finds ${gapAnalysis.strongCount} strong matches across the curated opportunities.`}
           </h2>
           <p className="mt-3 max-w-xl text-[14px] text-muted-foreground">
             That's the Career Gap simulator. Pick a skill you're considering, and Pathly re-scores

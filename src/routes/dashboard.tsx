@@ -5,6 +5,7 @@ import { usePathly } from "@/lib/pathly-store";
 import { AppShell } from "@/components/pathly/AppShell";
 import { Button } from "@/components/ui/button";
 import { MatchBadge } from "@/components/pathly/MatchBadge";
+import { APPLICATION_STAGES } from "@/lib/application-stages";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -51,6 +52,10 @@ function DashboardPage() {
   const nearby = jobs
     .filter((j) => profile.location.includes(j.city) && j.postedDaysAgo <= 3)
     .slice(0, 4);
+  const trackedRoleCount = new Set([
+    ...savedJobIds,
+    ...applications.map((application) => application.jobId),
+  ]).size;
 
   return (
     <AppShell>
@@ -67,7 +72,7 @@ function DashboardPage() {
           <Stat label="Strong matches" value={gapAnalysis.strongCount} tone="strong" />
           <Stat label="Potential matches" value={gapAnalysis.potentialCount} tone="potential" />
           <Stat label="Saved jobs" value={savedJobIds.length} />
-          <Stat label="Applications" value={applications.filter((a) => a.stage !== "Saved").length} />
+          <Stat label="Tracked roles" value={trackedRoleCount} />
         </div>
 
         <div className="mt-5 grid gap-5 lg:grid-cols-[1.1fr_1fr]">
@@ -107,7 +112,7 @@ function DashboardPage() {
               Application progress
             </p>
             <div className="mt-3 space-y-2">
-              {(["Saved", "Applied", "Interview", "Offer", "Rejected"] as const).map((stage) => {
+              {APPLICATION_STAGES.map((stage) => {
                 const count =
                   stage === "Saved"
                     ? savedJobIds.length

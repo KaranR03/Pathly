@@ -13,7 +13,6 @@ import {
 import { useEffect, type ReactNode } from "react";
 import { usePathly } from "@/lib/pathly-store";
 import { useAuth } from "@/lib/auth";
-import { useCloudProfile } from "@/lib/use-cloud-profile";
 import { BackBar } from "@/components/pathly/BackBar";
 import { cn } from "@/lib/utils";
 import {
@@ -60,7 +59,6 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
   const { profile, gapAnalysis } = usePathly();
   const { session, isGuest, loading, signOut, displayName } = useAuth();
   const navigate = useNavigate();
-  useCloudProfile();
   const initials = profile.name
     .split(" ")
     .map((n) => n[0])

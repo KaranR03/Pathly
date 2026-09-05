@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { PathlyProvider } from "@/lib/pathly-store";
 import { AuthProvider } from "@/lib/auth";
+import { useCloudProfile } from "@/lib/use-cloud-profile";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
@@ -129,17 +130,23 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+function CloudProfileSync() {
+  useCloudProfile();
+  return null;
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-      <PathlyProvider>
-        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-        <Outlet />
-        <Toaster position="top-center" />
-      </PathlyProvider>
+        <PathlyProvider>
+          <CloudProfileSync />
+          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+          <Outlet />
+          <Toaster position="top-center" />
+        </PathlyProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

@@ -37,8 +37,10 @@ export interface Job {
 }
 
 import { GENERATED_JOBS } from "./jobs.generated";
+import { isDemoReadyJob } from "@/lib/demo-jobs";
 
-export const JOBS: Job[] = GENERATED_JOBS;
+/** Curated subset used by the hackathon demo; the generated snapshot remains untouched. */
+export const JOBS: Job[] = GENERATED_JOBS.filter(isDemoReadyJob);
 
 
 export const CITIES: { name: string; state: string; lat: number; lng: number; zoom: number }[] = [
