@@ -14,23 +14,23 @@ export interface JobMapProps {
   onSelect: (jobId: string | null) => void;
 }
 
-// Light-grey canvas basemap (key-less raster) — quiet enough for match-coloured pins.
-const STYLE: maplibregl.StyleSpecification = {
+// Colourful physical basemap (key-less raster) — green terrain, blue oceans.
+export const PATHLY_BASEMAP_STYLE: maplibregl.StyleSpecification = {
   version: 8,
   sources: {
     base: {
       type: "raster",
       tiles: [
-        "https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}",
       ],
       tileSize: 256,
-      maxzoom: 16,
-      attribution: "Esri, HERE, Garmin, &copy; OpenStreetMap contributors",
+      maxzoom: 8,
+      attribution: "Esri, US National Park Service",
     },
   },
   layers: [
-    { id: "bg", type: "background", paint: { "background-color": "#f3f3f1" } },
-    { id: "base", type: "raster", source: "base", paint: { "raster-saturation": -0.3 } },
+    { id: "bg", type: "background", paint: { "background-color": "#a8d0e6" } },
+    { id: "base", type: "raster", source: "base" },
   ],
 };
 
@@ -47,7 +47,7 @@ export default function JobMap(props: JobMapProps) {
     if (!containerRef.current || mapRef.current) return;
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: STYLE,
+      style: PATHLY_BASEMAP_STYLE,
       center: [props.focus?.lng ?? 137.5, props.focus?.lat ?? -27.5],
       zoom: props.focus?.zoom ?? 3.6,
       attributionControl: { compact: true },
