@@ -1,6 +1,6 @@
 import { SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
-import { ALL_INDUSTRIES, ALL_SKILLS, CITIES } from "@/data/jobs";
+import { ALL_INDUSTRIES, ALL_SKILLS, AUSTRALIA_VIEW, CITIES } from "@/data/jobs";
 import { usePathly, type Filters } from "@/lib/pathly-store";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -57,7 +57,11 @@ export function activeFilterCount(f: Filters) {
   );
 }
 
-export function FilterPanel() {
+export function FilterPanel({
+  onFocusCity,
+}: {
+  onFocusCity?: (view: { lat: number; lng: number; zoom: number }) => void;
+}) {
   const { filters, setFilters, resetFilters, filteredJobs } = usePathly();
   const [open, setOpen] = useState(false);
   const count = activeFilterCount(filters);
@@ -111,7 +115,11 @@ export function FilterPanel() {
               <Chip
                 key={c.name}
                 active={filters.city === c.name}
-                onClick={() => setFilters({ city: filters.city === c.name ? null : c.name })}
+                onClick={() => {
+                  const active = filters.city === c.name;
+                  setFilters({ city: active ? null : c.name });
+                  onFocusCity?.(active ? AUSTRALIA_VIEW : { lat: c.lat, lng: c.lng, zoom: c.zoom });
+                }}
               >
                 {c.name}
               </Chip>
