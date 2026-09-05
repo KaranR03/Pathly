@@ -9,7 +9,6 @@ import {
 } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 
 const GUEST_KEY = "pathly-guest";
 
@@ -25,7 +24,6 @@ interface AuthCtx {
     email: string,
     password: string,
   ) => Promise<{ error: string | null; needsConfirmation: boolean }>;
-  signInWithGoogle: () => Promise<{ error: string | null }>;
   continueAsGuest: () => void;
   signOut: () => Promise<void>;
 }
@@ -106,13 +104,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           error: error?.message ?? null,
           needsConfirmation: !error && !data.session,
         };
-      },
-      signInWithGoogle: async () => {
-        const result = await lovable.auth.signInWithOAuth("google", {
-          redirect_uri: window.location.origin,
-        });
-        if (result.error) return { error: result.error.message ?? "Google sign-in failed" };
-        return { error: null };
       },
       continueAsGuest,
       signOut: async () => {
