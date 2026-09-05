@@ -90,6 +90,8 @@ interface Ctx {
   snapshot: PathlySnapshot;
   profileScope: string;
   hydrate: (s: Partial<PathlySnapshot>) => void;
+  profileReady: boolean;
+  markProfileReady: () => void;
 }
 
 export interface PathlySnapshot {
@@ -113,6 +115,7 @@ export function PathlyProvider({ children }: { children: ReactNode }) {
         : "anonymous";
   const initializedScope = useRef<string | null>(null);
   const [guestReady, setGuestReady] = useState(false);
+  const [memberProfileReady, setMemberProfileReady] = useState(false);
   const [profile, setProfile] = useState<Profile>(() =>
     createProfileForAccessMode("anonymous"),
   );
@@ -128,6 +131,7 @@ export function PathlyProvider({ children }: { children: ReactNode }) {
     if (authLoading || initializedScope.current === profileScope) return;
     initializedScope.current = profileScope;
     setGuestReady(false);
+    setMemberProfileReady(false);
     setProfile(
       createProfileForAccessMode(
         isGuest ? "guest" : user ? "member" : "anonymous",
@@ -291,6 +295,13 @@ export function PathlyProvider({ children }: { children: ReactNode }) {
     [jobs, filters.city, baseCandidate],
   );
 
+  const profileReady = profileScope.startsWith("member:")
+    ? memberProfileReady
+    : profileScope === "guest"
+      ? guestReady
+      : true;
+  const markProfileReady = useCallback(() => setMemberProfileReady(true), []);
+
   const hydrate = useCallback((s: Partial<PathlySnapshot>) => {
     if (s.profile) setProfile(s.profile);
     if (s.savedJobIds) setSavedJobIds(s.savedJobIds);
@@ -374,6 +385,8 @@ export function PathlyProvider({ children }: { children: ReactNode }) {
     },
     profileScope,
     hydrate,
+    profileReady,
+    markProfileReady,
   };
 
   return (

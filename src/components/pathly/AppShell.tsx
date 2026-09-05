@@ -24,7 +24,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-
 const NAV = [
   { to: "/map", label: "Map", icon: MapIcon },
   { to: "/career-gap", label: "Career Gap", icon: RouteIcon },
@@ -54,9 +53,15 @@ export function Wordmark({ className }: { className?: string }) {
   );
 }
 
-export function AppShell({ children, bare = false }: { children: ReactNode; bare?: boolean }) {
+export function AppShell({
+  children,
+  bare = false,
+}: {
+  children: ReactNode;
+  bare?: boolean;
+}) {
   const { pathname } = useRouterState({ select: (s) => s.location });
-  const { profile, gapAnalysis } = usePathly();
+  const { profile, gapAnalysis, profileReady } = usePathly();
   const { session, isGuest, loading, signOut, displayName } = useAuth();
   const navigate = useNavigate();
   const initials = profile.name
@@ -66,15 +71,43 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
 
   // Everything in the app needs either an account or guest mode.
   useEffect(() => {
-    if (!loading && !session && !isGuest) navigate({ to: "/auth", replace: true });
+    if (!loading && !session && !isGuest)
+      navigate({ to: "/auth", replace: true });
   }, [loading, session, isGuest, navigate]);
+
+  // New members walk through onboarding once before reaching the rest of the app.
+  useEffect(() => {
+    if (loading || isGuest || !session || !profileReady) return;
+    if (!profile.onboardingCompleted && pathname !== "/onboarding") {
+      navigate({ to: "/onboarding", replace: true });
+    }
+  }, [
+    loading,
+    session,
+    isGuest,
+    profileReady,
+    profile.onboardingCompleted,
+    pathname,
+    navigate,
+  ]);
 
   if (!loading && !session && !isGuest) {
     return <div className="min-h-screen bg-background" />;
   }
 
-  return (
+  const awaitingMemberProfile =
+    !isGuest && !!session && !profileReady && pathname !== "/onboarding";
+  const awaitingOnboardingRedirect =
+    !isGuest &&
+    !!session &&
+    profileReady &&
+    !profile.onboardingCompleted &&
+    pathname !== "/onboarding";
+  if (awaitingMemberProfile || awaitingOnboardingRedirect) {
+    return <div className="min-h-screen bg-background" />;
+  }
 
+  return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-40 border-b border-border/70 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex h-14 w-full max-w-[1600px] items-center gap-6 px-4 sm:px-6">
@@ -123,13 +156,18 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
                   <span className="text-[13px] font-medium">
                     {gapAnalysis.strongCount} strong matches near you
                   </span>
-                  <span className="text-xs text-muted-foreground">Updated this morning</span>
+                  <span className="text-xs text-muted-foreground">
+                    Updated this morning
+                  </span>
                 </DropdownMenuItem>
                 <DropdownMenuItem className="flex-col items-start gap-0.5">
                   <span className="text-[13px] font-medium">
-                    {gapAnalysis.gaps[0]?.skill ?? "Power BI"} is your biggest opportunity gap
+                    {gapAnalysis.gaps[0]?.skill ?? "Power BI"} is your biggest
+                    opportunity gap
                   </span>
-                  <span className="text-xs text-muted-foreground">Open Career Gap to simulate</span>
+                  <span className="text-xs text-muted-foreground">
+                    Open Career Gap to simulate
+                  </span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -139,9 +177,13 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 rounded-2xl">
                 <DropdownMenuLabel className="flex flex-col gap-0.5">
-                  <span className="text-[13px] font-medium">{displayName ?? profile.name}</span>
+                  <span className="text-[13px] font-medium">
+                    {displayName ?? profile.name}
+                  </span>
                   <span className="text-xs font-normal text-muted-foreground">
-                    {isGuest ? "Guest session — not saved" : (session?.user.email ?? "Signed in")}
+                    {isGuest
+                      ? "Guest session — not saved"
+                      : (session?.user.email ?? "Signed in")}
                   </span>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
@@ -179,26 +221,28 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
         </div>
       )}
 
-      <main className={cn("flex-1", bare ? "" : "pb-24 md:pb-10")}>{children}</main>
-
+      <main className={cn("flex-1", bare ? "" : "pb-24 md:pb-10")}>
+        {children}
+      </main>
 
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-background/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden">
         <div className="grid grid-cols-5">
-          {[{ to: "/dashboard", label: "Home", icon: LayoutDashboard } as const, ...NAV.slice(0, 4)].map(
-            (n) => (
-              <Link
-                key={n.to}
-                to={n.to}
-                className={cn(
-                  "flex flex-col items-center gap-1 py-2.5 text-[10px] font-medium text-muted-foreground transition-colors",
-                  pathname === n.to && "text-foreground",
-                )}
-              >
-                <n.icon className="size-[18px]" />
-                {n.label}
-              </Link>
-            ),
-          )}
+          {[
+            { to: "/dashboard", label: "Home", icon: LayoutDashboard } as const,
+            ...NAV.slice(0, 4),
+          ].map((n) => (
+            <Link
+              key={n.to}
+              to={n.to}
+              className={cn(
+                "flex flex-col items-center gap-1 py-2.5 text-[10px] font-medium text-muted-foreground transition-colors",
+                pathname === n.to && "text-foreground",
+              )}
+            >
+              <n.icon className="size-[18px]" />
+              {n.label}
+            </Link>
+          ))}
         </div>
       </nav>
     </div>

@@ -10,7 +10,7 @@ import { EMPTY_PROFILE } from "@/lib/profile-defaults";
  */
 export function useCloudProfile() {
   const { user, isGuest } = useAuth();
-  const { snapshot, hydrate, profileScope } = usePathly();
+  const { snapshot, hydrate, profileScope, markProfileReady } = usePathly();
   const loadedFor = useRef<string | null>(null);
   const hydratedFor = useRef<string | null>(null);
   const retryCount = useRef(0);
@@ -47,6 +47,9 @@ export function useCloudProfile() {
             () => setLoadAttempt((attempt) => attempt + 1),
             retryCount.current * 1_000,
           );
+        } else {
+          // Stop blocking the UI on a profile load that keeps failing.
+          markProfileReady();
         }
         return;
       }
@@ -69,6 +72,7 @@ export function useCloudProfile() {
       }
       retryCount.current = 0;
       hydratedFor.current = user.id;
+      markProfileReady();
     })();
 
     return () => {
@@ -76,7 +80,7 @@ export function useCloudProfile() {
       if (hydratedFor.current !== user.id) loadedFor.current = null;
       if (retryTimer.current) clearTimeout(retryTimer.current);
     };
-  }, [user, isGuest, hydrate, loadAttempt]);
+  }, [user, isGuest, hydrate, loadAttempt, markProfileReady]);
 
   useEffect(() => {
     if (

@@ -14,11 +14,14 @@ export interface JobMapProps {
   onSelect: (jobId: string | null) => void;
 }
 
-// Colourful physical basemap (key-less raster) — green terrain, blue oceans.
+// Colourful key-less raster basemap, blended from two Esri sources so it stays
+// sharp at every zoom: a vivid physical map (green land, blue oceans) for the
+// zoomed-out overview, and a detailed street map once you zoom into a city —
+// the physical map's native tiles run out at zoom 8 and go blurry past that.
 export const PATHLY_BASEMAP_STYLE: maplibregl.StyleSpecification = {
   version: 8,
   sources: {
-    base: {
+    overview: {
       type: "raster",
       tiles: [
         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}",
@@ -27,10 +30,20 @@ export const PATHLY_BASEMAP_STYLE: maplibregl.StyleSpecification = {
       maxzoom: 8,
       attribution: "Esri, US National Park Service",
     },
+    detail: {
+      type: "raster",
+      tiles: [
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",
+      ],
+      tileSize: 256,
+      maxzoom: 19,
+      attribution: "Esri, HERE, Garmin, &copy; OpenStreetMap contributors",
+    },
   },
   layers: [
     { id: "bg", type: "background", paint: { "background-color": "#a8d0e6" } },
-    { id: "base", type: "raster", source: "base" },
+    { id: "base-overview", type: "raster", source: "overview", maxzoom: 9 },
+    { id: "base-detail", type: "raster", source: "detail", minzoom: 8 },
   ],
 };
 
@@ -52,9 +65,14 @@ export default function JobMap(props: JobMapProps) {
       zoom: props.focus?.zoom ?? 3.6,
       attributionControl: { compact: true },
     });
-    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
     map.addControl(
-      new maplibregl.GeolocateControl({ positionOptions: { enableHighAccuracy: true } }),
+      new maplibregl.NavigationControl({ showCompass: false }),
+      "bottom-right",
+    );
+    map.addControl(
+      new maplibregl.GeolocateControl({
+        positionOptions: { enableHighAccuracy: true },
+      }),
       "bottom-right",
     );
     // Keep the canvas matched to its container (layout can settle after init).
@@ -75,8 +93,26 @@ export default function JobMap(props: JobMapProps) {
         source: "jobs-heat",
         paint: {
           "heatmap-weight": 1,
-          "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 3, 1.2, 12, 2.4],
-          "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 3, 18, 9, 40, 14, 70],
+          "heatmap-intensity": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            3,
+            1.2,
+            12,
+            2.4,
+          ],
+          "heatmap-radius": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            3,
+            18,
+            9,
+            40,
+            14,
+            70,
+          ],
           "heatmap-opacity": 0.75,
           "heatmap-color": [
             "interpolate",
@@ -115,7 +151,8 @@ export default function JobMap(props: JobMapProps) {
   const syncMarkers = () => {
     const map = mapRef.current;
     if (!map) return;
-    const { jobs, matchFor, mode, selectedId, unlockedJobIds, onSelect } = propsRef.current;
+    const { jobs, matchFor, mode, selectedId, unlockedJobIds, onSelect } =
+      propsRef.current;
     const wanted = new Set(jobs.map((j) => j.id));
 
     for (const [id, marker] of markersRef.current) {
@@ -131,7 +168,8 @@ export default function JobMap(props: JobMapProps) {
       const unlocked = unlockedJobIds.includes(job.id);
       const selected = selectedId === job.id;
       const existing = markersRef.current.get(job.id);
-      const el = (existing?.getElement() ?? document.createElement("button")) as HTMLButtonElement;
+      const el = (existing?.getElement() ??
+        document.createElement("button")) as HTMLButtonElement;
       if (!existing) {
         el.className = "pathly-marker";
         el.type = "button";
@@ -141,7 +179,10 @@ export default function JobMap(props: JobMapProps) {
         });
       }
       el.setAttribute("data-unlocked", String(unlocked));
-      el.setAttribute("aria-label", `${job.title} at ${job.company}, ${match.score}% match`);
+      el.setAttribute(
+        "aria-label",
+        `${job.title} at ${job.company}, ${match.score}% match`,
+      );
       const color = TIER_COLOR[match.tier];
       const size = selected ? 40 : 28;
       el.style.cssText = `width:${size}px;height:${size}px;border-radius:999px;border:2.5px solid #fff;background:${color};box-shadow:0 2px 10px rgba(20,22,28,.28);display:grid;place-items:center;color:#fff;font-size:${
@@ -161,7 +202,8 @@ export default function JobMap(props: JobMapProps) {
     const map = mapRef.current;
     if (!map || !readyRef.current) return;
     const { jobs, mode } = propsRef.current;
-    const src = map.getSource("jobs-heat") as maplibregl.GeoJSONSource | undefined;
+    const src = map.getSource("jobs-heat") as
+      maplibregl.GeoJSONSource | undefined;
     src?.setData({
       type: "FeatureCollection",
       features: jobs.map((j) => ({
@@ -171,7 +213,11 @@ export default function JobMap(props: JobMapProps) {
       })),
     });
     if (map.getLayer("jobs-heat-layer")) {
-      map.setLayoutProperty("jobs-heat-layer", "visibility", mode === "heatmap" ? "visible" : "none");
+      map.setLayoutProperty(
+        "jobs-heat-layer",
+        "visibility",
+        mode === "heatmap" ? "visible" : "none",
+      );
     }
   };
 
@@ -180,7 +226,13 @@ export default function JobMap(props: JobMapProps) {
     syncMarkers();
     syncHeat();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.jobs, props.mode, props.selectedId, props.unlockedJobIds, props.matchFor]);
+  }, [
+    props.jobs,
+    props.mode,
+    props.selectedId,
+    props.unlockedJobIds,
+    props.matchFor,
+  ]);
 
   useEffect(() => {
     const map = mapRef.current;
