@@ -7,6 +7,7 @@ import { usePathly } from "@/lib/pathly-store";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { MatchBadge, MatchRing } from "./MatchBadge";
+import { TRACKING_STAGE } from "@/lib/application-stages";
 
 export function JobDrawer({
   job,
@@ -65,12 +66,14 @@ export function JobDrawer({
             <Button
               className="flex-1 rounded-full"
               onClick={() => {
-                setStage(job.id, "Applied");
+                setStage(job.id, TRACKING_STAGE);
                 markViewed(job.id);
-                toast.success("Applied", { description: "Added to your application tracker." });
+                toast.success("Added to your tracker", {
+                  description: "Mark it as Applied after you submit through the employer.",
+                });
               }}
             >
-              Apply now
+              Track application
             </Button>
             <Button
               variant="secondary"

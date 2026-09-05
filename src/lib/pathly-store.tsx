@@ -4,14 +4,27 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
-import { JOBS, type Arrangement, type ExperienceLevel, type Job, type JobType } from "@/data/jobs";
+import {
+  JOBS,
+  type Arrangement,
+  type ExperienceLevel,
+  type Job,
+  type JobType,
+} from "@/data/jobs";
 import { analyseGaps, matchJob, type MatchResult } from "@/lib/matching";
 import type { ParsedCv } from "@/lib/cv.functions";
+import type { AppStage } from "@/lib/application-stages";
+import { useAuth } from "@/lib/auth";
+import {
+  createProfileForAccessMode,
+  type Profile,
+} from "@/lib/profile-defaults";
 
-export type AppStage = "Saved" | "Applied" | "Interview" | "Offer" | "Rejected";
+export type { AppStage } from "@/lib/application-stages";
 
 export interface Application {
   jobId: string;
@@ -19,18 +32,7 @@ export interface Application {
   date: string;
 }
 
-export interface Profile {
-  name: string;
-  location: string;
-  careerGoal: string;
-  experienceLevel: ExperienceLevel;
-  yearsExperience: number;
-  preferredIndustries: string[];
-  preferredJobTypes: JobType[];
-  maxCommuteMinutes: number;
-  skills: string[];
-  resumeName: string | null;
-}
+export type { Profile } from "@/lib/profile-defaults";
 
 export interface Filters {
   query: string;
@@ -58,32 +60,7 @@ export const EMPTY_FILTERS: Filters = {
   city: null,
 };
 
-const DEMO_PROFILE: Profile = {
-  name: "Alex Morgan",
-  location: "Brisbane QLD",
-  careerGoal: "Data Analyst",
-  experienceLevel: "Junior",
-  yearsExperience: 2,
-  preferredIndustries: ["Technology", "Government", "Banking"],
-  preferredJobTypes: ["Full-time", "Graduate"],
-  maxCommuteMinutes: 45,
-  skills: [
-    "Python",
-    "SQL",
-    "Excel",
-    "Data analysis",
-    "Data Visualisation",
-    "Power BI",
-    "Statistical analysis",
-    "Machine Learning",
-    "Stakeholder management",
-    "Communication",
-    "Problem solving",
-    "Git",
-  ],
-  resumeName: null,
-
-};
+const GUEST_STORAGE_KEY = "pathly-state:guest";
 
 interface Ctx {
   profile: Profile;
@@ -111,6 +88,7 @@ interface Ctx {
   markViewed: (jobId: string) => void;
   gapAnalysis: ReturnType<typeof analyseGaps>;
   snapshot: PathlySnapshot;
+  profileScope: string;
   hydrate: (s: Partial<PathlySnapshot>) => void;
 }
 
@@ -124,9 +102,20 @@ export interface PathlySnapshot {
 
 const PathlyContext = createContext<Ctx | null>(null);
 
-
 export function PathlyProvider({ children }: { children: ReactNode }) {
-  const [profile, setProfile] = useState<Profile>(DEMO_PROFILE);
+  const { loading: authLoading, isGuest, user } = useAuth();
+  const profileScope = authLoading
+    ? "loading"
+    : isGuest
+      ? "guest"
+      : user
+        ? `member:${user.id}`
+        : "anonymous";
+  const initializedScope = useRef<string | null>(null);
+  const [guestReady, setGuestReady] = useState(false);
+  const [profile, setProfile] = useState<Profile>(() =>
+    createProfileForAccessMode("anonymous"),
+  );
   const [employerJobs, setEmployerJobs] = useState<Job[]>([]);
   const [filters, setFiltersState] = useState<Filters>(EMPTY_FILTERS);
   const [simulatedSkill, setSimulatedSkill] = useState<string | null>(null);
@@ -134,37 +123,71 @@ export function PathlyProvider({ children }: { children: ReactNode }) {
   const [applications, setApplications] = useState<Application[]>([]);
   const [recentlyViewed, setRecentlyViewed] = useState<string[]>([]);
 
-  // Session persistence so a demo survives refreshes without a backend.
+  // Guest/demo state is isolated from signed-in member state.
   useEffect(() => {
+    if (authLoading || initializedScope.current === profileScope) return;
+    initializedScope.current = profileScope;
+    setGuestReady(false);
+    setProfile(
+      createProfileForAccessMode(
+        isGuest ? "guest" : user ? "member" : "anonymous",
+      ),
+    );
+    setSavedJobIds([]);
+    setApplications([]);
+    setEmployerJobs([]);
+    setRecentlyViewed([]);
+
+    if (!isGuest) return;
     try {
-      const raw = sessionStorage.getItem("pathly-state");
-      if (!raw) return;
-      const s = JSON.parse(raw);
-      if (s.profile) setProfile(s.profile);
-      if (s.savedJobIds) setSavedJobIds(s.savedJobIds);
-      if (s.applications) setApplications(s.applications);
-      if (s.employerJobs) setEmployerJobs(s.employerJobs);
-      if (s.recentlyViewed) setRecentlyViewed(s.recentlyViewed);
+      sessionStorage.removeItem("pathly-state");
+      const raw = sessionStorage.getItem(GUEST_STORAGE_KEY);
+      if (raw) {
+        const s = JSON.parse(raw) as Partial<PathlySnapshot>;
+        if (s.profile) setProfile(s.profile);
+        if (s.savedJobIds) setSavedJobIds(s.savedJobIds);
+        if (s.applications) setApplications(s.applications);
+        if (s.employerJobs) setEmployerJobs(s.employerJobs);
+        if (s.recentlyViewed) setRecentlyViewed(s.recentlyViewed);
+      }
     } catch {
       /* ignore */
+    } finally {
+      setGuestReady(true);
     }
-  }, []);
+  }, [authLoading, isGuest, profileScope, user]);
 
   useEffect(() => {
+    if (!isGuest || !guestReady || initializedScope.current !== "guest") return;
     try {
       sessionStorage.setItem(
-        "pathly-state",
-        JSON.stringify({ profile, savedJobIds, applications, employerJobs, recentlyViewed }),
+        GUEST_STORAGE_KEY,
+        JSON.stringify({
+          profile,
+          savedJobIds,
+          applications,
+          employerJobs,
+          recentlyViewed,
+        }),
       );
     } catch {
       /* ignore */
     }
-  }, [profile, savedJobIds, applications, employerJobs, recentlyViewed]);
+  }, [
+    isGuest,
+    guestReady,
+    profile,
+    savedJobIds,
+    applications,
+    employerJobs,
+    recentlyViewed,
+  ]);
 
   const jobs = useMemo(() => [...employerJobs, ...JOBS], [employerJobs]);
 
   const effectiveSkills = useMemo(
-    () => (simulatedSkill ? [...profile.skills, simulatedSkill] : profile.skills),
+    () =>
+      simulatedSkill ? [...profile.skills, simulatedSkill] : profile.skills,
     [profile.skills, simulatedSkill],
   );
 
@@ -186,14 +209,18 @@ export function PathlyProvider({ children }: { children: ReactNode }) {
     [profile.skills, profile.yearsExperience, profile.preferredIndustries],
   );
 
-  const matchFor = useCallback((job: Job) => matchJob(job, candidate), [candidate]);
+  const matchFor = useCallback(
+    (job: Job) => matchJob(job, candidate),
+    [candidate],
+  );
 
   const unlockedJobIds = useMemo(() => {
     if (!simulatedSkill) return [];
     return jobs
       .filter(
         (j) =>
-          matchJob(j, candidate).tier === "strong" && matchJob(j, baseCandidate).tier !== "strong",
+          matchJob(j, candidate).tier === "strong" &&
+          matchJob(j, baseCandidate).tier !== "strong",
       )
       .map((j) => j.id);
   }, [simulatedSkill, jobs, candidate, baseCandidate]);
@@ -203,25 +230,53 @@ export function PathlyProvider({ children }: { children: ReactNode }) {
     return jobs.filter((j) => {
       if (
         q &&
-        ![j.title, j.company, j.suburb, j.city, j.industry, ...j.required, ...j.preferred]
+        ![
+          j.title,
+          j.company,
+          j.suburb,
+          j.city,
+          j.industry,
+          ...j.required,
+          ...j.preferred,
+        ]
           .join(" ")
           .toLowerCase()
           .includes(q)
       )
         return false;
       if (filters.city && j.city !== filters.city) return false;
-      if (filters.jobTypes.length && !filters.jobTypes.includes(j.jobType)) return false;
-      if (filters.arrangements.length && !filters.arrangements.includes(j.arrangement)) return false;
-      if (filters.experience.length && !filters.experience.includes(j.experience)) return false;
-      if (filters.minSalary && j.salaryMax < filters.minSalary) return false;
-      if (filters.industries.length && !filters.industries.includes(j.industry)) return false;
-      if (filters.companySizes.length && !filters.companySizes.includes(j.companySize)) return false;
+      if (filters.jobTypes.length && !filters.jobTypes.includes(j.jobType))
+        return false;
       if (
-        filters.skills.length &&
-        !filters.skills.every((s) => [...j.required, ...j.preferred].includes(s))
+        filters.arrangements.length &&
+        !filters.arrangements.includes(j.arrangement)
       )
         return false;
-      if (filters.tiers.length && !filters.tiers.includes(matchJob(j, candidate).tier)) return false;
+      if (
+        filters.experience.length &&
+        !filters.experience.includes(j.experience)
+      )
+        return false;
+      if (filters.minSalary && j.salaryMax < filters.minSalary) return false;
+      if (filters.industries.length && !filters.industries.includes(j.industry))
+        return false;
+      if (
+        filters.companySizes.length &&
+        !filters.companySizes.includes(j.companySize)
+      )
+        return false;
+      if (
+        filters.skills.length &&
+        !filters.skills.every((s) =>
+          [...j.required, ...j.preferred].includes(s),
+        )
+      )
+        return false;
+      if (
+        filters.tiers.length &&
+        !filters.tiers.includes(matchJob(j, candidate).tier)
+      )
+        return false;
       return true;
     });
   }, [jobs, filters, candidate]);
@@ -236,6 +291,14 @@ export function PathlyProvider({ children }: { children: ReactNode }) {
     [jobs, filters.city, baseCandidate],
   );
 
+  const hydrate = useCallback((s: Partial<PathlySnapshot>) => {
+    if (s.profile) setProfile(s.profile);
+    if (s.savedJobIds) setSavedJobIds(s.savedJobIds);
+    if (s.applications) setApplications(s.applications);
+    if (s.employerJobs) setEmployerJobs(s.employerJobs);
+    if (s.recentlyViewed) setRecentlyViewed(s.recentlyViewed);
+  }, []);
+
   const value: Ctx = {
     profile,
     updateProfile: (patch) => setProfile((p) => ({ ...p, ...patch })),
@@ -245,7 +308,8 @@ export function PathlyProvider({ children }: { children: ReactNode }) {
           ? p
           : { ...p, skills: [...p.skills, s] },
       ),
-    removeSkill: (s) => setProfile((p) => ({ ...p, skills: p.skills.filter((x) => x !== s) })),
+    removeSkill: (s) =>
+      setProfile((p) => ({ ...p, skills: p.skills.filter((x) => x !== s) })),
     applyParsedCv: (fileName, cv) => {
       setProfile((p) => ({
         ...p,
@@ -257,7 +321,9 @@ export function PathlyProvider({ children }: { children: ReactNode }) {
         careerGoal: cv.careerGoal ?? p.careerGoal,
         experienceLevel: cv.experienceLevel ?? p.experienceLevel,
         yearsExperience: cv.yearsExperience ?? p.yearsExperience,
-        preferredIndustries: cv.industries.length ? cv.industries : p.preferredIndustries,
+        preferredIndustries: cv.industries.length
+          ? cv.industries
+          : p.preferredIndustries,
       }));
       return cv.skills;
     },
@@ -275,34 +341,44 @@ export function PathlyProvider({ children }: { children: ReactNode }) {
     unlockedJobIds,
     savedJobIds,
     toggleSaved: (jobId) =>
-      setSavedJobIds((s) => (s.includes(jobId) ? s.filter((x) => x !== jobId) : [...s, jobId])),
+      setSavedJobIds((s) =>
+        s.includes(jobId) ? s.filter((x) => x !== jobId) : [...s, jobId],
+      ),
     applications,
     setStage: (jobId, stage) =>
       setApplications((a) => {
         const existing = a.find((x) => x.jobId === jobId);
         if (existing)
-          return a.map((x) => (x.jobId === jobId ? { ...x, stage, date: x.date } : x));
+          return a.map((x) =>
+            x.jobId === jobId ? { ...x, stage, date: x.date } : x,
+          );
         return [
           ...a,
           { jobId, stage, date: new Date().toISOString().slice(0, 10) },
         ];
       }),
-    removeApplication: (jobId) => setApplications((a) => a.filter((x) => x.jobId !== jobId)),
+    removeApplication: (jobId) =>
+      setApplications((a) => a.filter((x) => x.jobId !== jobId)),
     recentlyViewed,
     markViewed: (jobId) =>
-      setRecentlyViewed((r) => [jobId, ...r.filter((x) => x !== jobId)].slice(0, 8)),
+      setRecentlyViewed((r) =>
+        [jobId, ...r.filter((x) => x !== jobId)].slice(0, 8),
+      ),
     gapAnalysis,
-    snapshot: { profile, savedJobIds, applications, employerJobs, recentlyViewed },
-    hydrate: (s) => {
-      if (s.profile) setProfile(s.profile);
-      if (s.savedJobIds) setSavedJobIds(s.savedJobIds);
-      if (s.applications) setApplications(s.applications);
-      if (s.employerJobs) setEmployerJobs(s.employerJobs);
-      if (s.recentlyViewed) setRecentlyViewed(s.recentlyViewed);
+    snapshot: {
+      profile,
+      savedJobIds,
+      applications,
+      employerJobs,
+      recentlyViewed,
     },
+    profileScope,
+    hydrate,
   };
 
-  return <PathlyContext.Provider value={value}>{children}</PathlyContext.Provider>;
+  return (
+    <PathlyContext.Provider value={value}>{children}</PathlyContext.Provider>
+  );
 }
 
 export function usePathly() {

@@ -20,12 +20,12 @@ export const Route = createFileRoute("/map")({
       {
         name: "description",
         content:
-          "Explore Australian jobs on an interactive map, with personalised AI match scores for every opportunity.",
+          "Explore curated Australian jobs on an interactive demo map with profile-based match scores.",
       },
       { property: "og:title", content: "Opportunity Map — Pathly" },
       {
         property: "og:description",
-        content: "Australian opportunities, mapped around you — with live AI match scoring.",
+        content: "Explore a curated Australian opportunity demo with transparent match scoring.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -134,6 +134,9 @@ function MapPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-1.5">
+              <span className="glass rounded-full px-3 py-1.5 text-[12px] font-medium text-muted-foreground">
+                Demo data
+              </span>
               <button
                 onClick={() => {
                   setFilters({ city: null });

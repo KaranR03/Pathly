@@ -6,6 +6,7 @@ import { usePathly } from "@/lib/pathly-store";
 import { MatchBadge } from "./MatchBadge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { TRACKING_STAGE } from "@/lib/application-stages";
 
 export function JobFloatingCard({
   job,
@@ -89,11 +90,13 @@ export function JobFloatingCard({
           variant="secondary"
           className="rounded-full"
           onClick={() => {
-            setStage(job.id, "Applied");
-            toast.success("Application tracked", { description: `${job.title} · ${job.company}` });
+            setStage(job.id, TRACKING_STAGE);
+            toast.success("Added to your tracker", {
+              description: `${job.title} · ${job.company}`,
+            });
           }}
         >
-          Apply
+          Track
         </Button>
         <Button
           size="icon"
