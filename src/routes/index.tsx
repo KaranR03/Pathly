@@ -1,12 +1,9 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { ArrowRight, Upload } from "lucide-react";
-import { AUSTRALIA_VIEW, CITIES, JOBS, type Job } from "@/data/jobs";
-import { analyseGaps, matchJob } from "@/lib/matching";
-import { DEMO_PROFILE } from "@/lib/profile-defaults";
-import { MapCanvas } from "@/components/pathly/MapCanvas";
+import { ArrowRight, Briefcase, GraduationCap, MapPin, Target } from "lucide-react";
+import { CITIES, JOBS } from "@/data/jobs";
 import { Wordmark } from "@/components/pathly/AppShell";
+import { HeroMapBackdrop } from "@/components/pathly/HeroMapBackdrop";
 import { Button } from "@/components/ui/button";
-
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -30,6 +27,29 @@ export const Route = createFileRoute("/")({
   component: Landing,
 });
 
+const FEATURES = [
+  {
+    icon: MapPin,
+    title: "Opportunity map",
+    copy: "Every curated Australian role, plotted on a map so you can see what's actually near you.",
+  },
+  {
+    icon: Target,
+    title: "Transparent match scores",
+    copy: "Pathly shows exactly why a role is a strong match, a potential fit, or a skill gap for you.",
+  },
+  {
+    icon: GraduationCap,
+    title: "Skill gap simulator",
+    copy: "Pick a skill you're considering learning and see how many more roles light up for you.",
+  },
+  {
+    icon: Briefcase,
+    title: "Application tracker",
+    copy: "Keep every saved role and application organised in one board, from applied to offer.",
+  },
+];
+
 const STEPS = [
   { title: "Discover", copy: "Explore a curated demo map of Australian opportunities." },
   { title: "Match", copy: "Pathly shows how your profile aligns with every role." },
@@ -39,24 +59,15 @@ const STEPS = [
 ];
 
 function Landing() {
-  const demoCandidate = {
-    skills: DEMO_PROFILE.skills,
-    yearsExperience: DEMO_PROFILE.yearsExperience,
-    preferredIndustries: DEMO_PROFILE.preferredIndustries,
-  };
-  const matchFor = (job: Job) => matchJob(job, demoCandidate);
-  const gapAnalysis = analyseGaps(JOBS, demoCandidate);
-  const preview = JOBS.filter((j) => ["Brisbane", "Sydney", "Melbourne", "Perth"].includes(j.city));
-  const topGap = gapAnalysis.gaps[0];
-
   return (
     <div className="min-h-screen bg-background">
       <div className="relative isolate overflow-hidden">
         <div className="pointer-events-none absolute inset-0 -z-10">
-          <div className="absolute inset-0 bg-[linear-gradient(145deg,#dbeafe_0%,#e0f2fe_42%,#dcfce7_100%)]" />
-          <div className="absolute inset-x-0 bottom-0 h-2/3 rounded-[50%_50%_0_0] bg-emerald-100/70 blur-2xl" />
-          <div className="animate-bliss-sheen absolute inset-0 bg-gradient-to-tr from-transparent via-white/40 to-transparent" />
-          <div className="absolute inset-0 bg-background/45" />
+          <div className="absolute inset-0 saturate-[1.15] opacity-80">
+            <HeroMapBackdrop />
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-background/55 to-background" />
+          <div className="animate-bliss-sheen absolute inset-0 bg-gradient-to-tr from-transparent via-white/30 to-transparent" />
           <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
         </div>
 
@@ -77,10 +88,9 @@ function Landing() {
                 Sign in
               </Link>
               <Button size="sm" className="rounded-full" asChild>
-                <Link to="/map">Open the map</Link>
+                <Link to="/auth">Get started</Link>
               </Button>
             </div>
-
           </div>
         </header>
 
@@ -92,67 +102,50 @@ function Landing() {
             Your career, mapped.
           </h1>
           <p className="mt-4 max-w-2xl text-[16px] leading-relaxed text-foreground/80 sm:text-[18px]">
-            Discover opportunities around you, understand where your skills stand, and see exactly
-            what to learn to unlock more jobs.
+            Sign in to see opportunities around you, understand where your skills stand, and learn
+            exactly what to study to unlock more jobs.
           </p>
           <div className="mt-7 flex flex-wrap gap-2.5">
             <Button size="lg" className="rounded-full px-6" asChild>
-              <Link to="/map">
-                Explore opportunities <ArrowRight className="size-4" />
+              <Link to="/auth">
+                Get started free <ArrowRight className="size-4" />
               </Link>
             </Button>
             <Button size="lg" variant="secondary" className="rounded-full px-6" asChild>
-              <Link to="/profile">
-                <Upload className="size-4" /> Upload my CV
-              </Link>
+              <a href="#how-it-works">See how it works</a>
             </Button>
+          </div>
+          <div className="mt-6 flex flex-wrap gap-4 text-[12px] text-muted-foreground">
+            <span>{JOBS.length} curated opportunities</span>
+            <span>{CITIES.length} Australian cities</span>
+            <span>Free to explore as a guest</span>
           </div>
         </section>
       </div>
 
-
       <section className="mx-auto w-full max-w-[1200px] px-4 pb-10 sm:px-6">
-        <div className="relative h-[440px] overflow-hidden rounded-[32px] border border-border/70 bg-card shadow-[var(--shadow-float)] sm:h-[520px]">
-          <MapCanvas
-            jobs={preview}
-            matchFor={matchFor}
-            mode="pins"
-            selectedId={null}
-            unlockedJobIds={[]}
-            focus={AUSTRALIA_VIEW}
-            onSelect={() => {}}
-          />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-wrap items-center gap-2 p-4">
-            <span className="glass rounded-full px-3 py-1.5 text-[12px] font-medium">
-              {JOBS.length} curated opportunities
-            </span>
-            <span className="glass rounded-full px-3 py-1.5 text-[12px] font-medium text-muted-foreground">
-              Demo data
-            </span>
-            {CITIES.slice(0, 4).map((c) => (
-              <span
-                key={c.name}
-                className="glass rounded-full px-3 py-1.5 text-[12px] font-medium text-muted-foreground"
-              >
-                {c.name}
+        <h2 className="text-[26px] font-semibold sm:text-[34px]">Why sign in?</h2>
+        <p className="mt-2 max-w-2xl text-[14px] text-muted-foreground">
+          Your profile is what powers every match score, so Pathly asks you to sign in (or continue
+          as a guest) before showing the map and your personalised results.
+        </p>
+        <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {FEATURES.map((f) => (
+            <article
+              key={f.title}
+              className="rounded-3xl border border-border/70 bg-card p-5 shadow-[var(--shadow-soft)]"
+            >
+              <span className="grid size-9 place-items-center rounded-full bg-primary/10 text-primary">
+                <f.icon className="size-4" />
               </span>
-            ))}
-          </div>
-        </div>
-        <div className="mt-3 flex flex-wrap gap-4 text-[12px] text-muted-foreground">
-          <span className="inline-flex items-center gap-1.5">
-            <span className="size-2 rounded-full bg-strong" /> Strong match 80–100%
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <span className="size-2 rounded-full bg-potential" /> Potential match 50–79%
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <span className="size-2 rounded-full bg-gap" /> Skill gap 0–49%
-          </span>
+              <h3 className="mt-3 text-[15px] font-semibold">{f.title}</h3>
+              <p className="mt-1.5 text-[13px] leading-relaxed text-muted-foreground">{f.copy}</p>
+            </article>
+          ))}
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-[1200px] px-4 py-12 sm:px-6 sm:py-20">
+      <section id="how-it-works" className="mx-auto w-full max-w-[1200px] px-4 py-12 sm:px-6 sm:py-20">
         <h2 className="text-[26px] font-semibold sm:text-[34px]">How Pathly works</h2>
         <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {STEPS.map((s, i) => (
@@ -173,16 +166,16 @@ function Landing() {
       <section className="mx-auto w-full max-w-[1200px] px-4 pb-20 sm:px-6">
         <div className="rounded-[32px] border border-border/70 bg-card p-8 shadow-[var(--shadow-soft)] sm:p-12">
           <h2 className="max-w-2xl text-[24px] leading-tight font-semibold sm:text-[32px]">
-            {topGap
-              ? `With the current demo profile, Pathly finds ${gapAnalysis.strongCount} strong matches. Learning ${topGap.skill} could bring that to ${topGap.projectedStrong}.`
-              : `With the current demo profile, Pathly finds ${gapAnalysis.strongCount} strong matches across the curated opportunities.`}
+            Find out which single skill would unlock the most opportunities for you.
           </h2>
           <p className="mt-3 max-w-xl text-[14px] text-muted-foreground">
-            That's the Career Gap simulator. Pick a skill you're considering, and Pathly re-scores
-            every job on the map so you can see exactly what opens up.
+            That's the Career Gap simulator. Sign in, pick a skill you're considering, and Pathly
+            re-scores every job on the map so you can see exactly what opens up.
           </p>
           <Button className="mt-6 rounded-full" asChild>
-            <Link to="/career-gap">Try the Opportunity Simulator</Link>
+            <Link to="/auth">
+              Try the Opportunity Simulator <ArrowRight className="size-4" />
+            </Link>
           </Button>
         </div>
       </section>
