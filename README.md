@@ -47,6 +47,12 @@ VITE_SUPABASE_URL=your-project-url
 VITE_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
 ```
 
+CV upload uses AI to extract skills and experience. Inside Lovable this works automatically, but a plain local `bun dev` has no access to Lovable's internal key, so also add a free key from [Google AI Studio](https://aistudio.google.com/apikey):
+
+```sh
+GEMINI_API_KEY=your-gemini-api-key
+```
+
 Then start the dev server:
 
 ```sh
@@ -63,6 +69,12 @@ bun run test      # run the honesty/behaviour test suite
 bun run lint      # eslint
 bun run format    # prettier --write
 ```
+
+## Architecture
+
+A visual map of how the codebase fits together — runtime entry points, feature routes, shared domain/state, and backend integrations:
+
+![Pathly architecture diagram](docs/architecture.png)
 
 ## Project structure
 
