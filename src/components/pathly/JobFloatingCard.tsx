@@ -45,7 +45,7 @@ export function JobFloatingCard({
       <div className="mt-3 flex items-center justify-between">
         <MatchBadge score={match.score} tier={match.tier} />
         <span className="text-[12px] text-muted-foreground">
-          {formatSalary(job.salaryMin, job.salaryMax)}
+          {formatSalary(job.salaryMin, job.salaryMax, job.salaryPeriod)}
         </span>
       </div>
 

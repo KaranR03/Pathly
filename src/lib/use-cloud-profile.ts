@@ -82,24 +82,54 @@ export function useCloudProfile() {
     };
   }, [user, isGuest, hydrate, loadAttempt, markProfileReady]);
 
+  const pendingSaveRef = useRef<(() => void) | null>(null);
+
   useEffect(() => {
     if (
       !user ||
       isGuest ||
       profileScope !== `member:${user.id}` ||
       hydratedFor.current !== user.id
-    )
+    ) {
+      pendingSaveRef.current = null;
       return;
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => {
+    }
+    const save = () => {
       void supabase.from("profiles").upsert({
         id: user.id,
         display_name: snapshot.profile.name,
         data: JSON.parse(JSON.stringify(snapshot)),
       });
+    };
+    pendingSaveRef.current = save;
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => {
+      timer.current = null;
+      save();
     }, 900);
     return () => {
       if (timer.current) clearTimeout(timer.current);
     };
   }, [user, isGuest, profileScope, snapshot]);
+
+  // A hard navigation or tab close within the 900ms debounce window would
+  // otherwise silently drop the last profile change (e.g. finishing
+  // employer onboarding and immediately heading to /employer to post a
+  // role) — flush any pending save instead of discarding it.
+  useEffect(() => {
+    const flush = () => {
+      if (timer.current) {
+        clearTimeout(timer.current);
+        timer.current = null;
+        pendingSaveRef.current?.();
+      }
+    };
+    window.addEventListener("pagehide", flush);
+    window.addEventListener("beforeunload", flush);
+    return () => {
+      window.removeEventListener("pagehide", flush);
+      window.removeEventListener("beforeunload", flush);
+      flush();
+    };
+  }, []);
 }

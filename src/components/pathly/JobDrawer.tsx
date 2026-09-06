@@ -74,7 +74,7 @@ export function JobDrawer({
                 </span>
                 <span className="inline-flex items-center gap-1">
                   <Wallet className="size-3.5" />{" "}
-                  {formatSalary(job.salaryMin, job.salaryMax)}
+                  {formatSalary(job.salaryMin, job.salaryMax, job.salaryPeriod)}
                 </span>
                 <span className="inline-flex items-center gap-1">
                   <Building2 className="size-3.5" /> {job.jobType} ·{" "}
@@ -232,6 +232,17 @@ export function JobDrawer({
               >
                 Build missing skills
               </Link>
+            </section>
+          )}
+
+          {job.companyBlurb && (
+            <section>
+              <p className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+                About the company
+              </p>
+              <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">
+                {job.companyBlurb}
+              </p>
             </section>
           )}
 

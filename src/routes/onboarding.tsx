@@ -3,12 +3,15 @@ import { useServerFn } from "@tanstack/react-start";
 import {
   ArrowLeft,
   ArrowRight,
+  Briefcase,
+  Building2,
   FileText,
   Github,
   Globe,
   Linkedin,
   PartyPopper,
   Plus,
+  Search,
   Sparkles,
   Upload,
   X,
@@ -17,13 +20,17 @@ import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { ALL_SKILLS } from "@/data/jobs";
 import type { ExperienceLevel } from "@/data/jobs";
+import type { AccountType, Profile } from "@/lib/profile-defaults";
 import { parseCv } from "@/lib/cv.functions";
 import { usePathly } from "@/lib/pathly-store";
+import { useAuth } from "@/lib/auth";
+import { persistProfileNow } from "@/lib/persist-profile-now";
 import { cn } from "@/lib/utils";
 import { AppShell } from "@/components/pathly/AppShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -39,7 +46,8 @@ export const Route = createFileRoute("/onboarding")({
   component: OnboardingPage,
 });
 
-const STEPS = ["CV", "Skills", "Profiles", "Done"] as const;
+const SEEKER_STEPS = ["You", "CV", "Skills", "Profiles", "Done"] as const;
+const EMPLOYER_STEPS = ["You", "Company", "Done"] as const;
 
 const EXPERIENCE_YEARS: Record<string, number> = {
   "No experience": 0,
@@ -51,18 +59,54 @@ const EXPERIENCE_YEARS: Record<string, number> = {
 
 function OnboardingPage() {
   const navigate = useNavigate();
-  const { profile, updateProfile, addSkill, removeSkill, applyParsedCv } =
-    usePathly();
+  const {
+    profile,
+    updateProfile,
+    addSkill,
+    removeSkill,
+    applyParsedCv,
+    snapshot,
+  } = usePathly();
+  const { user, isGuest } = useAuth();
   const parse = useServerFn(parseCv);
+  const [role, setRole] = useState<AccountType | null>(null);
   const [step, setStep] = useState(0);
   const [newSkill, setNewSkill] = useState("");
   const [detected, setDetected] = useState<string[]>([]);
   const [analysing, setAnalysing] = useState(false);
+  const [companyName, setCompanyName] = useState(profile.companyName ?? "");
+  const [companyBlurb, setCompanyBlurb] = useState(profile.companyBlurb ?? "");
   const fileRef = useRef<HTMLInputElement | null>(null);
 
-  const finish = () => {
-    updateProfile({ onboardingCompleted: true });
+  const STEPS = role === "employer" ? EMPLOYER_STEPS : SEEKER_STEPS;
+
+  const chooseRole = (next: AccountType) => {
+    setRole(next);
+    updateProfile({ accountType: next });
+    setStep(1);
+  };
+
+  const finishSeeker = async () => {
+    const nextProfile: Profile = { ...profile, onboardingCompleted: true };
+    updateProfile(nextProfile);
+    if (user && !isGuest) {
+      await persistProfileNow(user.id, { ...snapshot, profile: nextProfile });
+    }
     navigate({ to: "/dashboard", replace: true });
+  };
+
+  const finishEmployer = async () => {
+    const nextProfile: Profile = {
+      ...profile,
+      onboardingCompleted: true,
+      companyName: companyName.trim() || null,
+      companyBlurb: companyBlurb.trim() || null,
+    };
+    updateProfile(nextProfile);
+    if (user && !isGuest) {
+      await persistProfileNow(user.id, { ...snapshot, profile: nextProfile });
+    }
+    navigate({ to: "/employer", replace: true });
   };
 
   const goNext = () => setStep((s) => Math.min(s + 1, STEPS.length - 1));
@@ -110,34 +154,35 @@ function OnboardingPage() {
       <div className="mx-auto flex min-h-[calc(100vh-3.5rem)] w-full max-w-[640px] flex-col justify-center px-4 py-10 sm:px-6">
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            {STEPS.map((label, i) => (
-              <div key={label} className="flex items-center gap-2">
-                <span
-                  className={cn(
-                    "grid size-6 place-items-center rounded-full text-[11px] font-semibold transition-colors",
-                    i === step
-                      ? "bg-foreground text-background"
-                      : i < step
-                        ? "bg-primary/15 text-primary"
-                        : "bg-secondary text-muted-foreground",
-                  )}
-                >
-                  {i + 1}
-                </span>
-                {i < STEPS.length - 1 && (
+            {step > 0 &&
+              STEPS.map((label, i) => (
+                <div key={label} className="flex items-center gap-2">
                   <span
                     className={cn(
-                      "h-px w-6 sm:w-10",
-                      i < step ? "bg-primary/40" : "bg-border",
+                      "grid size-6 place-items-center rounded-full text-[11px] font-semibold transition-colors",
+                      i === step
+                        ? "bg-foreground text-background"
+                        : i < step
+                          ? "bg-primary/15 text-primary"
+                          : "bg-secondary text-muted-foreground",
                     )}
-                  />
-                )}
-              </div>
-            ))}
+                  >
+                    {i + 1}
+                  </span>
+                  {i < STEPS.length - 1 && (
+                    <span
+                      className={cn(
+                        "h-px w-6 sm:w-10",
+                        i < step ? "bg-primary/40" : "bg-border",
+                      )}
+                    />
+                  )}
+                </div>
+              ))}
           </div>
-          {step < STEPS.length - 1 && (
+          {step > 0 && step < STEPS.length - 1 && (
             <button
-              onClick={finish}
+              onClick={role === "employer" ? finishEmployer : finishSeeker}
               className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               Skip onboarding
@@ -149,7 +194,90 @@ function OnboardingPage() {
           {step === 0 && (
             <>
               <p className="text-[12px] font-medium tracking-wide text-muted-foreground uppercase">
-                Step 1 of 4
+                Welcome to Pathly
+              </p>
+              <h1 className="mt-1.5 text-[24px] font-semibold">
+                What brings you here?
+              </h1>
+              <p className="mt-2 text-[14px] text-muted-foreground">
+                This decides what we ask you next.
+              </p>
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => chooseRole("seeker")}
+                  className="rounded-2xl border border-border p-5 text-left transition-colors hover:border-foreground/40 hover:bg-secondary/40"
+                >
+                  <span className="grid size-10 place-items-center rounded-full bg-primary/10 text-primary">
+                    <Search className="size-5" />
+                  </span>
+                  <p className="mt-3 text-[15px] font-semibold">
+                    I'm looking for a job
+                  </p>
+                  <p className="mt-1 text-[13px] text-muted-foreground">
+                    Upload your CV, see match scores and apply across Australia.
+                  </p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => chooseRole("employer")}
+                  className="rounded-2xl border border-border p-5 text-left transition-colors hover:border-foreground/40 hover:bg-secondary/40"
+                >
+                  <span className="grid size-10 place-items-center rounded-full bg-primary/10 text-primary">
+                    <Briefcase className="size-5" />
+                  </span>
+                  <p className="mt-3 text-[15px] font-semibold">I'm hiring</p>
+                  <p className="mt-1 text-[13px] text-muted-foreground">
+                    Tell us about your company and post your first role — no
+                    résumé needed.
+                  </p>
+                </button>
+              </div>
+            </>
+          )}
+
+          {step === 1 && role === "employer" && (
+            <>
+              <p className="text-[12px] font-medium tracking-wide text-muted-foreground uppercase">
+                Step 2 of {STEPS.length}
+              </p>
+              <h1 className="mt-1.5 text-[24px] font-semibold">
+                Tell us about your company
+              </h1>
+              <p className="mt-2 text-[14px] text-muted-foreground">
+                We'll prefill this on every role you post — you can still edit
+                it per listing.
+              </p>
+              <div className="mt-5 space-y-4">
+                <div className="grid gap-1.5">
+                  <Label className="flex items-center gap-1.5 text-[12px]">
+                    <Building2 className="size-3.5" /> Company name
+                  </Label>
+                  <Input
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                    placeholder="Your company name"
+                    className="h-10 rounded-xl"
+                  />
+                </div>
+                <div className="grid gap-1.5">
+                  <Label className="text-[12px]">About your company</Label>
+                  <Textarea
+                    value={companyBlurb}
+                    onChange={(e) => setCompanyBlurb(e.target.value)}
+                    rows={4}
+                    placeholder="A Brisbane startup building..."
+                    className="rounded-2xl"
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
+          {step === 1 && role === "seeker" && (
+            <>
+              <p className="text-[12px] font-medium tracking-wide text-muted-foreground uppercase">
+                Step 2 of {STEPS.length}
               </p>
               <h1 className="mt-1.5 text-[24px] font-semibold">
                 Upload your CV
@@ -213,10 +341,10 @@ function OnboardingPage() {
             </>
           )}
 
-          {step === 1 && (
+          {step === 2 && role === "seeker" && (
             <>
               <p className="text-[12px] font-medium tracking-wide text-muted-foreground uppercase">
-                Step 2 of 4
+                Step 3 of {STEPS.length}
               </p>
               <h1 className="mt-1.5 text-[24px] font-semibold">
                 Your skills and experience
@@ -318,10 +446,10 @@ function OnboardingPage() {
             </>
           )}
 
-          {step === 2 && (
+          {step === 3 && role === "seeker" && (
             <>
               <p className="text-[12px] font-medium tracking-wide text-muted-foreground uppercase">
-                Step 3 of 4
+                Step 4 of {STEPS.length}
               </p>
               <h1 className="mt-1.5 text-[24px] font-semibold">
                 Connect your profiles
@@ -375,49 +503,66 @@ function OnboardingPage() {
             </>
           )}
 
-          {step === 3 && (
+          {step === STEPS.length - 1 && (
             <div className="text-center">
               <span className="mx-auto grid size-12 place-items-center rounded-full bg-primary/10 text-primary">
                 <PartyPopper className="size-6" />
               </span>
-              <h1 className="mt-4 text-[24px] font-semibold">
-                You're all set, {profile.name || "there"}.
-              </h1>
-              <p className="mt-2 text-[14px] text-muted-foreground">
-                Your profile is ready. You can always update your CV, skills or
-                links later from your Profile page.
-              </p>
+              {role === "employer" ? (
+                <>
+                  <h1 className="mt-4 text-[24px] font-semibold">
+                    You're all set{companyName ? `, ${companyName}` : ""}.
+                  </h1>
+                  <p className="mt-2 text-[14px] text-muted-foreground">
+                    Head to your employer dashboard to post your first role — no
+                    résumé required.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h1 className="mt-4 text-[24px] font-semibold">
+                    You're all set, {profile.name || "there"}.
+                  </h1>
+                  <p className="mt-2 text-[14px] text-muted-foreground">
+                    Your profile is ready. You can always update your CV, skills
+                    or links later from your Profile page.
+                  </p>
+                </>
+              )}
             </div>
           )}
 
-          <div className="mt-7 flex items-center justify-between">
-            <Button
-              variant="ghost"
-              className="rounded-full"
-              onClick={goBack}
-              disabled={step === 0}
-            >
-              <ArrowLeft className="size-4" /> Back
-            </Button>
-            {step < STEPS.length - 1 ? (
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="secondary"
-                  className="rounded-full"
-                  onClick={goNext}
-                >
-                  Skip
-                </Button>
-                <Button className="rounded-full" onClick={goNext}>
-                  Continue <ArrowRight className="size-4" />
-                </Button>
-              </div>
-            ) : (
-              <Button className="rounded-full px-6" onClick={finish}>
-                Go to dashboard <ArrowRight className="size-4" />
+          {step > 0 && (
+            <div className="mt-7 flex items-center justify-between">
+              <Button variant="ghost" className="rounded-full" onClick={goBack}>
+                <ArrowLeft className="size-4" /> Back
               </Button>
-            )}
-          </div>
+              {step < STEPS.length - 1 ? (
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="secondary"
+                    className="rounded-full"
+                    onClick={goNext}
+                  >
+                    Skip
+                  </Button>
+                  <Button className="rounded-full" onClick={goNext}>
+                    Continue <ArrowRight className="size-4" />
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  className="rounded-full px-6"
+                  onClick={role === "employer" ? finishEmployer : finishSeeker}
+                >
+                  {role === "employer"
+                    ? "Go to employer dashboard"
+                    : "Go to dashboard"}{" "}
+                  <ArrowRight className="size-4" />
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </AppShell>

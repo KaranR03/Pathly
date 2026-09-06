@@ -37,8 +37,6 @@ export interface CandidateLike {
   preferredIndustries?: string[];
 }
 
-
-
 /** Words that carry no signal when comparing skill phrases. */
 const STOP = new Set([
   "and",
@@ -184,7 +182,10 @@ export function matchJob(job: Job, candidate: CandidateLike): MatchResult {
     ? prefScored.reduce((sum, r) => sum + r.strength, 0) / job.preferred.length
     : reqScore;
 
-  const experienceGap = Math.max(0, job.yearsPreferred - candidate.yearsExperience);
+  const experienceGap = Math.max(
+    0,
+    job.yearsPreferred - candidate.yearsExperience,
+  );
   const surplus = Math.max(0, candidate.yearsExperience - job.yearsPreferred);
   const expScore =
     job.yearsPreferred === 0
@@ -197,7 +198,8 @@ export function matchJob(job: Job, candidate: CandidateLike): MatchResult {
       : 0.4
     : 0.7;
 
-  const raw = reqScore * 0.6 + prefScore * 0.17 + expScore * 0.16 + industryScore * 0.07;
+  const raw =
+    reqScore * 0.6 + prefScore * 0.17 + expScore * 0.16 + industryScore * 0.07;
   const score = Math.max(3, Math.min(99, Math.round(raw * 100)));
 
   return {
@@ -210,7 +212,6 @@ export function matchJob(job: Job, candidate: CandidateLike): MatchResult {
     experienceGap,
   };
 }
-
 
 export interface GapSkill {
   skill: string;
@@ -230,7 +231,9 @@ export function analyseGaps(
 ): { strongCount: number; potentialCount: number; gaps: GapSkill[] } {
   const results = jobs.map((j) => ({ job: j, match: matchJob(j, candidate) }));
   const strongCount = results.filter((r) => r.match.tier === "strong").length;
-  const potentialCount = results.filter((r) => r.match.tier === "potential").length;
+  const potentialCount = results.filter(
+    (r) => r.match.tier === "potential",
+  ).length;
 
   const counts = new Map<string, number>();
   for (const r of results) {
@@ -242,9 +245,17 @@ export function analyseGaps(
 
   const gaps: GapSkill[] = [...counts.entries()]
     .map(([skill, jobsTotal]) => {
-      const withSkill: CandidateLike = { ...candidate, skills: [...candidate.skills, skill] };
-      const after = jobs.map((j) => ({ job: j, match: matchJob(j, withSkill) }));
-      const projectedStrong = after.filter((r) => r.match.tier === "strong").length;
+      const withSkill: CandidateLike = {
+        ...candidate,
+        skills: [...candidate.skills, skill],
+      };
+      const after = jobs.map((j) => ({
+        job: j,
+        match: matchJob(j, withSkill),
+      }));
+      const projectedStrong = after.filter(
+        (r) => r.match.tier === "strong",
+      ).length;
       const unlocked = after.filter((r, i) => {
         return r.match.tier === "strong" && results[i]!.match.tier !== "strong";
       });
@@ -273,11 +284,23 @@ export function analyseGaps(
         industries: [...industries].slice(0, 4),
       };
     })
-    .sort((a, b) => b.projectedStrong - a.projectedStrong || b.jobsTotal - a.jobsTotal)
+    .sort(
+      (a, b) =>
+        b.projectedStrong - a.projectedStrong || b.jobsTotal - a.jobsTotal,
+    )
     .slice(0, limit);
 
   return { strongCount, potentialCount, gaps };
 }
 
-export const formatSalary = (min: number, max: number) =>
-  `$${(min / 1000).toFixed(0)},000–$${(max / 1000).toFixed(0)},000 AUD`;
+export const formatSalary = (
+  min: number,
+  max: number,
+  period: "year" | "hour" = "year",
+) => {
+  if (period === "hour") {
+    const fmt = (n: number) => `$${n % 1 === 0 ? n.toFixed(0) : n.toFixed(2)}`;
+    return `${fmt(min)}–${fmt(max)}/hr AUD`;
+  }
+  return `$${(min / 1000).toFixed(0)},000–$${(max / 1000).toFixed(0)},000 AUD`;
+};

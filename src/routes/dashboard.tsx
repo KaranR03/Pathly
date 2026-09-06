@@ -380,7 +380,7 @@ function JobList({ title, items }: { title: string; items: string[] }) {
                 <p className="truncate text-[13px] font-medium">{job.title}</p>
                 <p className="truncate text-[12px] text-muted-foreground">
                   {job.company} · {job.suburb} {job.state} ·{" "}
-                  {formatSalary(job.salaryMin, job.salaryMax)}
+                  {formatSalary(job.salaryMin, job.salaryMax, job.salaryPeriod)}
                 </p>
               </div>
               <MatchBadge score={m.score} tier={m.tier} showLabel={false} />

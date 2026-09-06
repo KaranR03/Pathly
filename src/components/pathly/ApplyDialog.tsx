@@ -7,6 +7,7 @@ import type { Job } from "@/data/jobs";
 import { matchJob } from "@/lib/matching";
 import { useAuth } from "@/lib/auth";
 import { usePathly } from "@/lib/pathly-store";
+import { persistProfileNow } from "@/lib/persist-profile-now";
 import { submitJobApplication } from "@/lib/employer-db";
 import {
   verifyApplication,
@@ -53,7 +54,7 @@ export function ApplyDialog({
   onOpenChange: (open: boolean) => void;
 }) {
   const { user, isGuest, displayName } = useAuth();
-  const { setStage, markViewed } = usePathly();
+  const { setStage, markViewed, snapshot } = usePathly();
   const verify = useServerFn(verifyApplication);
   const fileRef = useRef<HTMLInputElement | null>(null);
 
@@ -121,6 +122,30 @@ export function ApplyDialog({
 
       setStage(job.id, "Applied");
       markViewed(job.id);
+
+      // Guarantees the "Applied" card survives even if the user closes this
+      // dialog and immediately navigates away, rather than waiting on the
+      // store's 900ms debounced autosave (see persist-profile-now.ts).
+      if (user && !isGuest) {
+        const today = new Date().toISOString().slice(0, 10);
+        const nextApplications = snapshot.applications.some(
+          (a) => a.jobId === job.id,
+        )
+          ? snapshot.applications.map((a) =>
+              a.jobId === job.id
+                ? { ...a, stage: "Applied" as const, date: a.date }
+                : a,
+            )
+          : [
+              ...snapshot.applications,
+              { jobId: job.id, stage: "Applied" as const, date: today },
+            ];
+        await persistProfileNow(user.id, {
+          ...snapshot,
+          applications: nextApplications,
+        });
+      }
+
       setResult(outcome);
       toast.success("Application submitted", {
         description: `${job.company} can now see your verified profile for this role.`,

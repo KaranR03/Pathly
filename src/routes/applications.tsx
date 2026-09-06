@@ -174,7 +174,11 @@ function ApplicationsPage() {
                       </div>
                       <p className="mt-1 text-[11px] text-muted-foreground">
                         {job.suburb} {job.state} ·{" "}
-                        {formatSalary(job.salaryMin, job.salaryMax)}
+                        {formatSalary(
+                          job.salaryMin,
+                          job.salaryMax,
+                          job.salaryPeriod,
+                        )}
                       </p>
                       {a.date && (
                         <p className="mt-0.5 text-[11px] text-muted-foreground">

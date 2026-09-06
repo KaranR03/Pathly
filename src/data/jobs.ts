@@ -30,6 +30,12 @@ export interface Job {
    * the static demo dataset below, with no real employer account behind it. */
   source?: "seed" | "employer";
   ownerId?: string;
+  /** salaryMin/salaryMax are annual unless this is "hour". Omitted (seed
+   * data) means "year". */
+  salaryPeriod?: "year" | "hour";
+  /** Short blurb about the employer, shown alongside the role description.
+   * Only set on real employer-posted jobs. */
+  companyBlurb?: string | undefined;
 }
 
 import { GENERATED_JOBS } from "./jobs.generated";
