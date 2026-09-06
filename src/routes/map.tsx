@@ -42,6 +42,7 @@ function MapPage() {
     simulatedSkill,
     setSimulatedSkill,
     filters,
+    setFilters,
     markViewed,
   } = usePathly();
   const [mode, setMode] = useState<"pins" | "heatmap">("pins");
@@ -160,31 +161,6 @@ function MapPage() {
               >
                 My matches only
               </button>
-              <button
-                onClick={() => {
-                  setFilters({ city: null });
-                  setFocus({ ...AUSTRALIA_VIEW });
-                }}
-                className="glass rounded-full px-3 py-1.5 text-[12px] font-medium"
-              >
-                All Australia
-              </button>
-              {CITIES.map((c) => (
-                <button
-                  key={c.name}
-                  onClick={() => {
-                    setFilters({ city: c.name });
-                    setFocus({ lat: c.lat, lng: c.lng, zoom: c.zoom });
-                  }}
-                  className={cn(
-                    "glass rounded-full px-3 py-1.5 text-[12px] font-medium transition-colors",
-                    filters.city === c.name &&
-                      "bg-foreground/90 text-background",
-                  )}
-                >
-                  {c.name}
-                </button>
-              ))}
               <div className="sm:hidden">
                 <button
                   onClick={() => setMode(mode === "pins" ? "heatmap" : "pins")}
