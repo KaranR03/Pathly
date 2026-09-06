@@ -36,7 +36,14 @@ export function SearchBar({
         <Search className="size-4 shrink-0 text-muted-foreground" />
         <input
           value={value}
-          onChange={(e) => setValue(e.target.value)}
+          onChange={(e) => {
+            const next = e.target.value;
+            setValue(next);
+            // Plain keyword filtering happens live; pressing Enter (or
+            // picking a suggestion) upgrades it to the fuller AI-interpreted
+            // search below via run().
+            setFilters({ query: next });
+          }}
           onFocus={() => setOpen(true)}
           onBlur={() => setTimeout(() => setOpen(false), 140)}
           onKeyDown={(e) => {
