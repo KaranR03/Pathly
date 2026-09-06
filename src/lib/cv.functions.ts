@@ -35,6 +35,7 @@ const AiSchema = z.object({
 
 const SYSTEM = `You extract structured career data from an Australian job seeker's CV.
 Rules:
+- "name" is the candidate's full name exactly as written on the CV (usually the first line or in a header/contact block), else null. Never invent a name.
 - "skills" are concrete, canonical skill names actually evidenced in the CV (tools, technologies, methods, licences, soft skills). 8-20 items, Title case, no duplicates, no sentences.
 - "yearsExperience" is total relevant professional experience in years (0 if student/graduate with no professional roles). Integer or one decimal.
 - "experienceLevel" is one of: No experience, Entry level, Junior, Mid-level, Senior.

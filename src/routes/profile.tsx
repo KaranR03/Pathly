@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import {
+  ArrowRight,
   FileText,
   Github,
   Globe,
@@ -179,6 +180,11 @@ function ProfilePage() {
                     </span>
                   ))}
                 </div>
+                <Button className="mt-4 rounded-full" asChild>
+                  <Link to="/map">
+                    Start exploring jobs <ArrowRight className="size-4" />
+                  </Link>
+                </Button>
               </div>
             )}
 
