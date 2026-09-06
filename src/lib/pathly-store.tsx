@@ -231,58 +231,70 @@ export function PathlyProvider({ children }: { children: ReactNode }) {
 
   const filteredJobs = useMemo(() => {
     const q = filters.query.trim().toLowerCase();
-    return jobs.filter((j) => {
-      if (
-        q &&
-        ![
-          j.title,
-          j.company,
-          j.suburb,
-          j.city,
-          j.industry,
-          ...j.required,
-          ...j.preferred,
-        ]
-          .join(" ")
-          .toLowerCase()
-          .includes(q)
-      )
-        return false;
-      if (filters.city && j.city !== filters.city) return false;
-      if (filters.jobTypes.length && !filters.jobTypes.includes(j.jobType))
-        return false;
-      if (
-        filters.arrangements.length &&
-        !filters.arrangements.includes(j.arrangement)
-      )
-        return false;
-      if (
-        filters.experience.length &&
-        !filters.experience.includes(j.experience)
-      )
-        return false;
-      if (filters.minSalary && j.salaryMax < filters.minSalary) return false;
-      if (filters.industries.length && !filters.industries.includes(j.industry))
-        return false;
-      if (
-        filters.companySizes.length &&
-        !filters.companySizes.includes(j.companySize)
-      )
-        return false;
-      if (
-        filters.skills.length &&
-        !filters.skills.every((s) =>
-          [...j.required, ...j.preferred].includes(s),
+    return (
+      jobs
+        .filter((j) => {
+          if (
+            q &&
+            ![
+              j.title,
+              j.company,
+              j.suburb,
+              j.city,
+              j.industry,
+              ...j.required,
+              ...j.preferred,
+            ]
+              .join(" ")
+              .toLowerCase()
+              .includes(q)
+          )
+            return false;
+          if (filters.city && j.city !== filters.city) return false;
+          if (filters.jobTypes.length && !filters.jobTypes.includes(j.jobType))
+            return false;
+          if (
+            filters.arrangements.length &&
+            !filters.arrangements.includes(j.arrangement)
+          )
+            return false;
+          if (
+            filters.experience.length &&
+            !filters.experience.includes(j.experience)
+          )
+            return false;
+          if (filters.minSalary && j.salaryMax < filters.minSalary)
+            return false;
+          if (
+            filters.industries.length &&
+            !filters.industries.includes(j.industry)
+          )
+            return false;
+          if (
+            filters.companySizes.length &&
+            !filters.companySizes.includes(j.companySize)
+          )
+            return false;
+          if (
+            filters.skills.length &&
+            !filters.skills.every((s) =>
+              [...j.required, ...j.preferred].includes(s),
+            )
+          )
+            return false;
+          if (
+            filters.tiers.length &&
+            !filters.tiers.includes(matchJob(j, candidate).tier)
+          )
+            return false;
+          return true;
+        })
+        // Best matches first by default, so the list itself is personalised —
+        // not just the badges next to each job.
+        .sort(
+          (a, b) => matchJob(b, candidate).score - matchJob(a, candidate).score,
         )
-      )
-        return false;
-      if (
-        filters.tiers.length &&
-        !filters.tiers.includes(matchJob(j, candidate).tier)
-      )
-        return false;
-      return true;
-    });
+    );
   }, [jobs, filters, candidate]);
 
   const gapAnalysis = useMemo(
