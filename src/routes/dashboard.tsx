@@ -1,11 +1,12 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { ArrowUpRight, Sparkles } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Check, Sparkles } from "lucide-react";
 import { formatSalary } from "@/lib/matching";
 import { usePathly } from "@/lib/pathly-store";
 import { AppShell } from "@/components/pathly/AppShell";
 import { Button } from "@/components/ui/button";
 import { MatchBadge } from "@/components/pathly/MatchBadge";
 import { APPLICATION_STAGES } from "@/lib/application-stages";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -41,7 +42,8 @@ function DashboardPage() {
   } = usePathly();
 
   const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+  const greeting =
+    hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
   const topGap = gapAnalysis.gaps[0];
 
   const recommended = [...jobs]
@@ -66,31 +68,36 @@ function DashboardPage() {
         <h1 className="mt-1.5 text-[28px] font-semibold sm:text-[34px]">
           {greeting}, {profile.name.split(" ")[0]}
         </h1>
-        <p className="mt-2 text-[14px] text-muted-foreground">Your opportunity snapshot</p>
+        <p className="mt-2 text-[14px] text-muted-foreground">
+          Your opportunity snapshot
+        </p>
+
+        <GettingStarted
+          hasResume={!!profile.resumeName}
+          hasBrowsed={recentlyViewed.length > 0}
+          hasSavedOrTracked={savedJobIds.length > 0 || applications.length > 0}
+        />
 
         <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <Stat label="Strong matches" value={gapAnalysis.strongCount} tone="strong" />
-          <Stat label="Potential matches" value={gapAnalysis.potentialCount} tone="potential" />
-          <Stat label="Saved jobs" value={savedJobIds.length} />
-          <Stat label="Tracked roles" value={trackedRoleCount} />
-        </div>
-
-        <div className="mt-5 grid gap-5 lg:grid-cols-[1.1fr_1fr]">
-          <section className="rounded-3xl border border-border/70 bg-card p-6 shadow-[var(--shadow-soft)]">
+          <section className="col-span-2 rounded-[28px] border border-border/70 bg-gradient-to-br from-potential-soft/70 to-card p-6 shadow-[var(--shadow-float)] sm:p-7">
             <p className="flex items-center gap-1.5 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
               <Sparkles className="size-3.5" /> Top skill to learn
             </p>
-            <h2 className="mt-2 text-[26px] font-semibold">{topGap?.skill ?? "You're all set"}</h2>
+            <h2 className="mt-2 text-[30px] font-semibold tracking-tight sm:text-[34px]">
+              {topGap?.skill ?? "You're all set"}
+            </h2>
             {topGap && (
               <>
-                <p className="mt-1 text-[14px] text-muted-foreground">
+                <p className="mt-1.5 text-[14px] text-muted-foreground">
                   Could potentially unlock{" "}
                   <span className="font-semibold text-strong">
-                    +{Math.max(0, topGap.projectedStrong - topGap.currentStrong)} jobs
+                    +
+                    {Math.max(0, topGap.projectedStrong - topGap.currentStrong)}{" "}
+                    jobs
                   </span>{" "}
                   around you.
                 </p>
-                <div className="mt-4 flex flex-wrap gap-2">
+                <div className="mt-5 flex flex-wrap gap-2">
                   <Button className="rounded-full" asChild>
                     <Link to="/career-gap">Explore Career Gap</Link>
                   </Button>
@@ -107,7 +114,22 @@ function DashboardPage() {
             )}
           </section>
 
-          <section className="rounded-3xl border border-border/70 bg-card p-6 shadow-[var(--shadow-soft)]">
+          <RingStat
+            label="Strong matches"
+            value={gapAnalysis.strongCount}
+            total={jobs.length}
+            tone="strong"
+          />
+          <RingStat
+            label="Potential matches"
+            value={gapAnalysis.potentialCount}
+            total={jobs.length}
+            tone="potential"
+          />
+        </div>
+
+        <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <section className="col-span-2 rounded-2xl border border-border/70 p-5">
             <p className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
               Application progress
             </p>
@@ -117,17 +139,25 @@ function DashboardPage() {
                   stage === "Saved"
                     ? savedJobIds.length
                     : applications.filter((a) => a.stage === stage).length;
-                const max = Math.max(1, savedJobIds.length, applications.length);
+                const max = Math.max(
+                  1,
+                  savedJobIds.length,
+                  applications.length,
+                );
                 return (
                   <div key={stage} className="flex items-center gap-3">
-                    <span className="w-20 text-[12px] text-muted-foreground">{stage}</span>
+                    <span className="w-20 text-[12px] text-muted-foreground">
+                      {stage}
+                    </span>
                     <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-secondary">
                       <div
                         className="h-full rounded-full bg-foreground/70 transition-all duration-500"
                         style={{ width: `${(count / max) * 100}%` }}
                       />
                     </div>
-                    <span className="w-6 text-right text-[12px] font-medium">{count}</span>
+                    <span className="w-6 text-right text-[12px] font-medium">
+                      {count}
+                    </span>
                   </div>
                 );
               })}
@@ -139,11 +169,20 @@ function DashboardPage() {
               Open tracker <ArrowUpRight className="size-3.5" />
             </Link>
           </section>
+
+          <Stat label="Saved jobs" value={savedJobIds.length} />
+          <Stat label="Tracked roles" value={trackedRoleCount} />
         </div>
 
         <div className="mt-5 grid gap-5 lg:grid-cols-2">
-          <JobList title="Recommended for you" items={recommended.map((r) => r.job.id)} />
-          <JobList title="New nearby opportunities" items={nearby.map((j) => j.id)} />
+          <JobList
+            title="Recommended for you"
+            items={recommended.map((r) => r.job.id)}
+          />
+          <JobList
+            title="New nearby opportunities"
+            items={nearby.map((j) => j.id)}
+          />
         </div>
 
         {recentlyViewed.length > 0 && (
@@ -156,26 +195,157 @@ function DashboardPage() {
   );
 }
 
-function Stat({
+function GettingStarted({
+  hasResume,
+  hasBrowsed,
+  hasSavedOrTracked,
+}: {
+  hasResume: boolean;
+  hasBrowsed: boolean;
+  hasSavedOrTracked: boolean;
+}) {
+  const steps = [
+    {
+      label: "Upload your CV so matches reflect your real skills",
+      done: hasResume,
+      to: "/profile",
+      cta: "Upload CV",
+    },
+    {
+      label: "Browse your personalised matches on the map",
+      done: hasBrowsed,
+      to: "/map",
+      cta: "Open map",
+    },
+    {
+      label: "Save or track a role you like",
+      done: hasSavedOrTracked,
+      to: "/map",
+      cta: "Find a role",
+    },
+  ] as const;
+
+  const remaining = steps.filter((s) => !s.done).length;
+  if (remaining === 0) return null;
+
+  return (
+    <section className="mt-5 rounded-[28px] border border-border/70 bg-gradient-to-br from-strong-soft/60 to-card p-6 shadow-[var(--shadow-float)] sm:p-7">
+      <p className="flex items-center gap-1.5 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+        <Sparkles className="size-3.5" /> Get the most out of Pathly
+      </p>
+      <h2 className="mt-2 text-[20px] font-semibold">
+        {remaining} quick step{remaining > 1 ? "s" : ""} to a personalised
+        experience
+      </h2>
+      <div className="mt-4 space-y-2">
+        {steps.map((s) => (
+          <div
+            key={s.label}
+            className="flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-card/70 px-4 py-3"
+          >
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span
+                className={cn(
+                  "grid size-5 shrink-0 place-items-center rounded-full",
+                  s.done
+                    ? "bg-strong text-white"
+                    : "border border-border text-transparent",
+                )}
+              >
+                <Check className="size-3" />
+              </span>
+              <span
+                className={cn(
+                  "truncate text-[13px]",
+                  s.done && "text-muted-foreground line-through",
+                )}
+              >
+                {s.label}
+              </span>
+            </div>
+            {!s.done && (
+              <Link
+                to={s.to}
+                className="flex shrink-0 items-center gap-1 text-[12px] font-medium underline underline-offset-4"
+              >
+                {s.cta} <ArrowRight className="size-3" />
+              </Link>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-2xl border border-border/70 p-4">
+      <p className="text-[12px] text-muted-foreground">{label}</p>
+      <p className="mt-1 text-[28px] font-semibold tracking-tight">{value}</p>
+    </div>
+  );
+}
+
+function RingStat({
   label,
   value,
+  total,
   tone,
 }: {
   label: string;
   value: number;
-  tone?: "strong" | "potential";
+  total: number;
+  tone: "strong" | "potential";
 }) {
+  const pct = total > 0 ? value / total : 0;
+  const r = 22;
+  const circumference = 2 * Math.PI * r;
+  const stroke = tone === "strong" ? "var(--strong)" : "var(--potential)";
   return (
-    <div className="rounded-3xl border border-border/70 bg-card p-4 shadow-[var(--shadow-soft)]">
-      <p className="text-[12px] text-muted-foreground">{label}</p>
-      <p
-        className={
-          "mt-1 text-[28px] font-semibold " +
-          (tone === "strong" ? "text-strong" : tone === "potential" ? "text-potential" : "")
-        }
-      >
-        {value}
-      </p>
+    <div
+      className={cn(
+        "flex items-center gap-3 rounded-2xl border border-border/70 p-4",
+        tone === "strong" ? "bg-strong-soft" : "bg-potential-soft",
+      )}
+    >
+      <div className="relative size-14 shrink-0">
+        <svg viewBox="0 0 56 56" className="size-full -rotate-90">
+          <circle
+            cx="28"
+            cy="28"
+            r={r}
+            fill="none"
+            stroke="var(--border)"
+            strokeWidth="5"
+          />
+          <circle
+            cx="28"
+            cy="28"
+            r={r}
+            fill="none"
+            stroke={stroke}
+            strokeWidth="5"
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={circumference * (1 - pct)}
+            style={{
+              transition: "stroke-dashoffset 700ms cubic-bezier(.2,.8,.2,1)",
+            }}
+          />
+        </svg>
+      </div>
+      <div className="min-w-0">
+        <p className="truncate text-[12px] text-muted-foreground">{label}</p>
+        <p
+          className={cn(
+            "mt-0.5 text-[22px] font-semibold tracking-tight",
+            tone === "strong" ? "text-strong" : "text-potential",
+          )}
+        >
+          {value}
+        </p>
+      </div>
     </div>
   );
 }
@@ -196,7 +366,15 @@ function JobList({ title, items }: { title: string; items: string[] }) {
             <Link
               key={id}
               to="/map"
-              className="flex items-center gap-3 py-3 transition-opacity hover:opacity-70"
+              className="flex items-center gap-3 border-l-2 py-3 pl-3 transition-opacity hover:opacity-70"
+              style={{
+                borderColor:
+                  m.tier === "strong"
+                    ? "var(--strong)"
+                    : m.tier === "potential"
+                      ? "var(--potential)"
+                      : "var(--gap)",
+              }}
             >
               <div className="min-w-0 flex-1">
                 <p className="truncate text-[13px] font-medium">{job.title}</p>
@@ -210,7 +388,9 @@ function JobList({ title, items }: { title: string; items: string[] }) {
           );
         })}
         {items.length === 0 && (
-          <p className="py-3 text-[12px] text-muted-foreground">Nothing to show yet.</p>
+          <p className="py-3 text-[12px] text-muted-foreground">
+            Nothing to show yet.
+          </p>
         )}
       </div>
     </section>

@@ -24,7 +24,8 @@ export const Route = createFileRoute("/map")({
       { property: "og:title", content: "Opportunity Map — Pathly" },
       {
         property: "og:description",
-        content: "Explore a curated Australian opportunity demo with transparent match scoring.",
+        content:
+          "Explore a curated Australian opportunity demo with transparent match scoring.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -46,7 +47,11 @@ function MapPage() {
   const [mode, setMode] = useState<"pins" | "heatmap">("pins");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [focus, setFocus] = useState<{ lat: number; lng: number; zoom: number } | null>(null);
+  const [focus, setFocus] = useState<{
+    lat: number;
+    lng: number;
+    zoom: number;
+  } | null>(null);
 
   const selected = filteredJobs.find((j) => j.id === selectedId) ?? null;
 
@@ -121,10 +126,16 @@ function MapPage() {
                     onClick={() => setMode(m)}
                     className={cn(
                       "inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-[12px] font-medium transition-all",
-                      mode === m ? "bg-foreground text-background" : "text-muted-foreground",
+                      mode === m
+                        ? "bg-foreground text-background"
+                        : "text-muted-foreground",
                     )}
                   >
-                    {m === "pins" ? <MapPin className="size-3.5" /> : <Layers className="size-3.5" />}
+                    {m === "pins" ? (
+                      <MapPin className="size-3.5" />
+                    ) : (
+                      <Layers className="size-3.5" />
+                    )}
                     {m === "pins" ? "Pins" : "Heatmap"}
                   </button>
                 ))}
@@ -135,6 +146,45 @@ function MapPage() {
               <span className="glass rounded-full px-3 py-1.5 text-[12px] font-medium text-muted-foreground">
                 Demo data
               </span>
+              <button
+                onClick={() =>
+                  setFilters({
+                    tiers: filters.tiers.length ? [] : ["strong", "potential"],
+                  })
+                }
+                className={cn(
+                  "glass rounded-full px-3 py-1.5 text-[12px] font-medium transition-colors",
+                  filters.tiers.length > 0 &&
+                    "bg-foreground/90 text-background",
+                )}
+              >
+                My matches only
+              </button>
+              <button
+                onClick={() => {
+                  setFilters({ city: null });
+                  setFocus({ ...AUSTRALIA_VIEW });
+                }}
+                className="glass rounded-full px-3 py-1.5 text-[12px] font-medium"
+              >
+                All Australia
+              </button>
+              {CITIES.map((c) => (
+                <button
+                  key={c.name}
+                  onClick={() => {
+                    setFilters({ city: c.name });
+                    setFocus({ lat: c.lat, lng: c.lng, zoom: c.zoom });
+                  }}
+                  className={cn(
+                    "glass rounded-full px-3 py-1.5 text-[12px] font-medium transition-colors",
+                    filters.city === c.name &&
+                      "bg-foreground/90 text-background",
+                  )}
+                >
+                  {c.name}
+                </button>
+              ))}
               <div className="sm:hidden">
                 <button
                   onClick={() => setMode(mode === "pins" ? "heatmap" : "pins")}
@@ -148,7 +198,8 @@ function MapPage() {
             {simulatedSkill && (
               <div className="glass animate-rise flex w-fit items-center gap-2 rounded-full py-1.5 pr-2 pl-3 text-[12px] font-medium">
                 <Sparkles className="size-3.5 text-strong" />
-                Simulating {simulatedSkill} · {unlockedJobIds.length} opportunities unlocked
+                Simulating {simulatedSkill} · {unlockedJobIds.length}{" "}
+                opportunities unlocked
                 <button
                   aria-label="Turn off simulation"
                   onClick={() => setSimulatedSkill(null)}
@@ -179,7 +230,11 @@ function MapPage() {
                   <span
                     className={cn(
                       "size-2 rounded-full",
-                      tier === "strong" ? "bg-strong" : tier === "potential" ? "bg-potential" : "bg-gap",
+                      tier === "strong"
+                        ? "bg-strong"
+                        : tier === "potential"
+                          ? "bg-potential"
+                          : "bg-gap",
                     )}
                   />
                   <span className="flex-1 text-muted-foreground">{label}</span>
@@ -209,7 +264,9 @@ function MapPage() {
         <div className="pointer-events-none absolute top-0 right-0 z-20 hidden h-full w-[330px] flex-col p-4 pt-[104px] xl:flex">
           <div className="glass pointer-events-auto flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl">
             <div className="border-b border-border/60 px-4 py-3">
-              <p className="text-[13px] font-semibold">{filteredJobs.length} opportunities</p>
+              <p className="text-[13px] font-semibold">
+                {filteredJobs.length} opportunities
+              </p>
               <p className="text-[12px] text-muted-foreground">
                 {filters.city ?? "Across Australia"}
                 {filters.query ? ` · "${filters.query}"` : ""}
@@ -233,19 +290,26 @@ function MapPage() {
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="truncate text-[13px] font-medium">{j.title}</p>
+                        <p className="truncate text-[13px] font-medium">
+                          {j.title}
+                        </p>
                         <p className="truncate text-[12px] text-muted-foreground">
                           {j.company} · {j.suburb}
                         </p>
                       </div>
-                      <MatchBadge score={m.score} tier={m.tier} showLabel={false} />
+                      <MatchBadge
+                        score={m.score}
+                        tier={m.tier}
+                        showLabel={false}
+                      />
                     </div>
                   </button>
                 );
               })}
               {filteredJobs.length === 0 && (
                 <p className="p-4 text-[13px] text-muted-foreground">
-                  No opportunities match these filters yet. Try widening your search.
+                  No opportunities match these filters yet. Try widening your
+                  search.
                 </p>
               )}
             </div>

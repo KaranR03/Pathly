@@ -157,18 +157,29 @@ export function AppShell({
                     {gapAnalysis.strongCount} strong matches near you
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    Updated this morning
+                    Based on your current profile
                   </span>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="flex-col items-start gap-0.5">
-                  <span className="text-[13px] font-medium">
-                    {gapAnalysis.gaps[0]?.skill ?? "Power BI"} is your biggest
-                    opportunity gap
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    Open Career Gap to simulate
-                  </span>
-                </DropdownMenuItem>
+                {gapAnalysis.gaps[0] ? (
+                  <DropdownMenuItem className="flex-col items-start gap-0.5">
+                    <span className="text-[13px] font-medium">
+                      {gapAnalysis.gaps[0].skill} is your biggest opportunity
+                      gap
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      Open Career Gap to simulate
+                    </span>
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem className="flex-col items-start gap-0.5">
+                    <span className="text-[13px] font-medium">
+                      No major skill gaps right now
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      You're matching strongly as-is
+                    </span>
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
             <DropdownMenu>
