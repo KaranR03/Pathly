@@ -101,11 +101,14 @@ export function JobDrawer({
                 setStage(job.id, TRACKING_STAGE);
                 markViewed(job.id);
                 toast.success("Added to your tracker", {
-                  description: "Mark it as Applied after you submit through the employer.",
+                  description:
+                    "Mark it as Applied after you submit through the employer.",
                 });
               }}
             >
-              {isRealEmployerJob ? "Apply with verification" : "Track application"}
+              {isRealEmployerJob
+                ? "Apply with verification"
+                : "Track application"}
             </Button>
             <Button
               variant="secondary"

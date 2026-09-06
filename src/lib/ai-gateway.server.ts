@@ -90,7 +90,11 @@ async function callAnthropic(
   return stripCodeFence(content);
 }
 
-async function callGemini(system: string, user: string, apiKey: string): Promise<string> {
+async function callGemini(
+  system: string,
+  user: string,
+  apiKey: string,
+): Promise<string> {
   const model = process.env["GEMINI_MODEL"] || "gemini-3.6-flash";
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
@@ -105,15 +109,18 @@ async function callGemini(system: string, user: string, apiKey: string): Promise
     },
   );
 
-  if (res.status === 429) throw new Error("AI is busy right now — please try again in a moment.");
-  if (res.status === 403) throw new Error("The Gemini API key is invalid or restricted.");
+  if (res.status === 429)
+    throw new Error("AI is busy right now — please try again in a moment.");
+  if (res.status === 403)
+    throw new Error("The Gemini API key is invalid or restricted.");
   if (!res.ok) throw new Error("The AI request failed. Please try again.");
 
   const payload = (await res.json()) as {
     candidates?: { content?: { parts?: { text?: string }[] } }[];
   };
   const content = payload.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!content) throw new Error("The AI response came back empty. Please try again.");
+  if (!content)
+    throw new Error("The AI response came back empty. Please try again.");
   return stripCodeFence(content);
 }
 

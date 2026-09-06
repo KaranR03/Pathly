@@ -138,7 +138,8 @@ function ApplicationsPage() {
                   const m = matchFor(job);
                   const hasSavedApplication = applications.some(
                     (application) =>
-                      application.jobId === job.id && application.stage === "Saved",
+                      application.jobId === job.id &&
+                      application.stage === "Saved",
                   );
                   return (
                     <article
@@ -158,8 +159,10 @@ function ApplicationsPage() {
                           aria-label="Remove"
                           onClick={() => {
                             if (stage === "Saved") {
-                              if (savedJobIds.includes(job.id)) toggleSaved(job.id);
-                              if (hasSavedApplication) removeApplication(job.id);
+                              if (savedJobIds.includes(job.id))
+                                toggleSaved(job.id);
+                              if (hasSavedApplication)
+                                removeApplication(job.id);
                               return;
                             }
                             removeApplication(job.id);
