@@ -1,5 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { ArrowUpRight, Sparkles } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Check, Sparkles } from "lucide-react";
 import { formatSalary } from "@/lib/matching";
 import { usePathly } from "@/lib/pathly-store";
 import { AppShell } from "@/components/pathly/AppShell";
@@ -71,6 +71,12 @@ function DashboardPage() {
         <p className="mt-2 text-[14px] text-muted-foreground">
           Your opportunity snapshot
         </p>
+
+        <GettingStarted
+          hasResume={!!profile.resumeName}
+          hasBrowsed={recentlyViewed.length > 0}
+          hasSavedOrTracked={savedJobIds.length > 0 || applications.length > 0}
+        />
 
         <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
           <section className="col-span-2 rounded-[28px] border border-border/70 bg-gradient-to-br from-potential-soft/70 to-card p-6 shadow-[var(--shadow-float)] sm:p-7">
@@ -186,6 +192,89 @@ function DashboardPage() {
         )}
       </div>
     </AppShell>
+  );
+}
+
+function GettingStarted({
+  hasResume,
+  hasBrowsed,
+  hasSavedOrTracked,
+}: {
+  hasResume: boolean;
+  hasBrowsed: boolean;
+  hasSavedOrTracked: boolean;
+}) {
+  const steps = [
+    {
+      label: "Upload your CV so matches reflect your real skills",
+      done: hasResume,
+      to: "/profile",
+      cta: "Upload CV",
+    },
+    {
+      label: "Browse your personalised matches on the map",
+      done: hasBrowsed,
+      to: "/map",
+      cta: "Open map",
+    },
+    {
+      label: "Save or track a role you like",
+      done: hasSavedOrTracked,
+      to: "/map",
+      cta: "Find a role",
+    },
+  ] as const;
+
+  const remaining = steps.filter((s) => !s.done).length;
+  if (remaining === 0) return null;
+
+  return (
+    <section className="mt-5 rounded-[28px] border border-border/70 bg-gradient-to-br from-strong-soft/60 to-card p-6 shadow-[var(--shadow-float)] sm:p-7">
+      <p className="flex items-center gap-1.5 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+        <Sparkles className="size-3.5" /> Get the most out of Pathly
+      </p>
+      <h2 className="mt-2 text-[20px] font-semibold">
+        {remaining} quick step{remaining > 1 ? "s" : ""} to a personalised
+        experience
+      </h2>
+      <div className="mt-4 space-y-2">
+        {steps.map((s) => (
+          <div
+            key={s.label}
+            className="flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-card/70 px-4 py-3"
+          >
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span
+                className={cn(
+                  "grid size-5 shrink-0 place-items-center rounded-full",
+                  s.done
+                    ? "bg-strong text-white"
+                    : "border border-border text-transparent",
+                )}
+              >
+                <Check className="size-3" />
+              </span>
+              <span
+                className={cn(
+                  "truncate text-[13px]",
+                  s.done && "text-muted-foreground line-through",
+                )}
+              >
+                {s.label}
+              </span>
+            </div>
+            {!s.done && (
+              <Link
+                to={s.to}
+                className="flex shrink-0 items-center gap-1 text-[12px] font-medium underline underline-offset-4"
+              >
+                {s.cta} <ArrowRight className="size-3" />
+              </Link>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 

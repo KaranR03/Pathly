@@ -12,7 +12,7 @@ export const Route = createFileRoute("/auth")({
       {
         name: "description",
         content:
-          "Sign in to Pathly with email or Google to save jobs, track applications and close your skill gaps — or explore as a guest.",
+          "Sign in to Pathly with email to save jobs, track applications and close your skill gaps — or explore as a guest.",
       },
       { property: "og:title", content: "Sign in to Pathly" },
       {
@@ -29,13 +29,12 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const { session, signIn, signUp, signInWithGoogle, continueAsGuest } =
-    useAuth();
+  const { session, signIn, signUp, continueAsGuest } = useAuth();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [busy, setBusy] = useState<null | "email" | "google" | "guest">(null);
+  const [busy, setBusy] = useState<null | "email" | "guest">(null);
 
   useEffect(() => {
     if (session) navigate({ to: "/dashboard", replace: true });
@@ -100,38 +99,6 @@ function AuthPage() {
           </p>
 
           <div className="mt-7 rounded-3xl border border-border/70 bg-card p-5 shadow-sm sm:p-6">
-            <button
-              type="button"
-              disabled={busy !== null}
-              onClick={async () => {
-                setBusy("google");
-                const { error } = await signInWithGoogle();
-                if (error) {
-                  setBusy(null);
-                  toast.error(error);
-                }
-              }}
-              className="flex w-full items-center justify-center gap-2.5 rounded-full border border-border bg-background px-4 py-2.5 text-[14px] font-medium transition-colors hover:bg-accent disabled:opacity-60"
-            >
-              {busy === "google" ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <svg viewBox="0 0 24 24" className="size-4" aria-hidden>
-                  <path
-                    fill="#EA4335"
-                    d="M12 10.2v3.9h5.5c-.24 1.4-1.72 4.1-5.5 4.1A6.2 6.2 0 1 1 12 5.8c1.6 0 3 .6 4 1.6l2.7-2.6A9.9 9.9 0 0 0 12 2a10 10 0 1 0 0 20c5.8 0 9.6-4 9.6-9.7 0-.7-.1-1.3-.2-1.9H12z"
-                  />
-                </svg>
-              )}
-              Continue with Google
-            </button>
-
-            <div className="my-5 flex items-center gap-3 text-[11px] tracking-wide text-muted-foreground uppercase">
-              <span className="h-px flex-1 bg-border" />
-              or
-              <span className="h-px flex-1 bg-border" />
-            </div>
-
             <form onSubmit={onSubmit} className="space-y-3">
               {mode === "signup" && (
                 <input
