@@ -2,6 +2,7 @@ node_modules/
 .output/
 .wrangler/
 .vinxi/
+.vercel/
 dist/
 build/
 coverage/
@@ -10,3 +11,5 @@ coverage/
 !.env.example
 .DS_Store
 *.local
+.vercel
+.env*

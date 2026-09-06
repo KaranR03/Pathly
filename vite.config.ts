@@ -12,6 +12,10 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  // Outside Lovable's own sandbox this is respected as-is (needed for `vercel
+  // build`/deploy); inside the sandbox Lovable's wrapper always forces
+  // cloudflare-module regardless, so this has no effect there.
+  nitro: { preset: "vercel" },
   vite: {
     // maplibre-gl loads its own web worker; pre-bundling breaks the worker URL.
     optimizeDeps: { exclude: ["maplibre-gl"] },
