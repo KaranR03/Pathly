@@ -1,6 +1,7 @@
 node_modules/
 .output/
 .wrangler/
+.vinxi/
 dist/
 build/
 coverage/
@@ -8,3 +9,4 @@ coverage/
 .env.*
 !.env.example
 .DS_Store
+*.local

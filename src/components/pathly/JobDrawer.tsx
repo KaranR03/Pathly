@@ -1,5 +1,14 @@
 import { Link } from "@tanstack/react-router";
-import { Bookmark, BookmarkCheck, Building2, Check, Clock, MapPin, Wallet } from "lucide-react";
+import {
+  Bookmark,
+  BookmarkCheck,
+  Building2,
+  Check,
+  Clock,
+  MapPin,
+  Wallet,
+} from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 import type { Job } from "@/data/jobs";
 import { formatSalary } from "@/lib/matching";
@@ -8,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { MatchBadge, MatchRing } from "./MatchBadge";
 import { TRACKING_STAGE } from "@/lib/application-stages";
+import { ApplyDialog } from "./ApplyDialog";
 
 export function JobDrawer({
   job,
@@ -20,12 +30,21 @@ export function JobDrawer({
   onOpenChange: (open: boolean) => void;
   onSelectJob?: (jobId: string) => void;
 }) {
-  const { matchFor, savedJobIds, toggleSaved, setStage, jobs, markViewed, gapAnalysis } =
-    usePathly();
+  const {
+    matchFor,
+    savedJobIds,
+    toggleSaved,
+    setStage,
+    jobs,
+    markViewed,
+    gapAnalysis,
+  } = usePathly();
+  const [applyOpen, setApplyOpen] = useState(false);
 
   if (!job) return null;
   const match = matchFor(job);
   const saved = savedJobIds.includes(job.id);
+  const isRealEmployerJob = job.source === "employer";
   const missingAll = [...match.missing, ...match.missingPreferred];
   const nearby = jobs
     .filter((j) => j.id !== job.id && j.city === job.city)
@@ -41,21 +60,29 @@ export function JobDrawer({
         <div className="sticky top-0 z-10 border-b border-border/60 bg-card/85 px-6 pt-6 pb-4 backdrop-blur-xl">
           <div className="flex items-start gap-4">
             <div className="min-w-0 flex-1">
-              <h2 className="text-[19px] leading-tight font-semibold">{job.title}</h2>
-              <p className="mt-1 text-[13px] text-muted-foreground">{job.company}</p>
+              <h2 className="text-[19px] leading-tight font-semibold">
+                {job.title}
+              </h2>
+              <p className="mt-1 text-[13px] text-muted-foreground">
+                {job.company}
+              </p>
               <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[12px] text-muted-foreground">
                 <span className="inline-flex items-center gap-1">
                   <MapPin className="size-3.5" /> {job.suburb} {job.state}
                 </span>
                 <span className="inline-flex items-center gap-1">
-                  <Wallet className="size-3.5" /> {formatSalary(job.salaryMin, job.salaryMax)}
+                  <Wallet className="size-3.5" />{" "}
+                  {formatSalary(job.salaryMin, job.salaryMax)}
                 </span>
                 <span className="inline-flex items-center gap-1">
-                  <Building2 className="size-3.5" /> {job.jobType} · {job.arrangement}
+                  <Building2 className="size-3.5" /> {job.jobType} ·{" "}
+                  {job.arrangement}
                 </span>
                 <span className="inline-flex items-center gap-1">
                   <Clock className="size-3.5" />
-                  {job.postedDaysAgo === 0 ? "Posted today" : `Posted ${job.postedDaysAgo}d ago`}
+                  {job.postedDaysAgo === 0
+                    ? "Posted today"
+                    : `Posted ${job.postedDaysAgo}d ago`}
                 </span>
               </div>
             </div>
@@ -66,6 +93,11 @@ export function JobDrawer({
             <Button
               className="flex-1 rounded-full"
               onClick={() => {
+                if (isRealEmployerJob) {
+                  setApplyOpen(true);
+                  markViewed(job.id);
+                  return;
+                }
                 setStage(job.id, TRACKING_STAGE);
                 markViewed(job.id);
                 toast.success("Added to your tracker", {
@@ -73,18 +105,26 @@ export function JobDrawer({
                 });
               }}
             >
-              Track application
+              {isRealEmployerJob ? "Apply with verification" : "Track application"}
             </Button>
             <Button
               variant="secondary"
               className="rounded-full"
               onClick={() => toggleSaved(job.id)}
             >
-              {saved ? <BookmarkCheck className="size-4" /> : <Bookmark className="size-4" />}
+              {saved ? (
+                <BookmarkCheck className="size-4" />
+              ) : (
+                <Bookmark className="size-4" />
+              )}
               {saved ? "Saved" : "Save"}
             </Button>
           </div>
         </div>
+
+        {isRealEmployerJob && (
+          <ApplyDialog job={job} open={applyOpen} onOpenChange={setApplyOpen} />
+        )}
 
         <div className="space-y-6 px-6 py-5">
           <section className="rounded-2xl bg-secondary/60 p-4">
@@ -130,7 +170,6 @@ export function JobDrawer({
                 </div>
               )}
               {missingAll.length > 0 && (
-
                 <div>
                   <p className="mb-1.5 font-medium">Skills to strengthen</p>
                   <div className="flex flex-wrap gap-1.5">
@@ -149,13 +188,14 @@ export function JobDrawer({
               )}
               {match.experienceGap > 0 && (
                 <p className="text-[12px] text-muted-foreground">
-                  Experience gap: the employer prefers {job.yearsPreferred} years of experience.
+                  Experience gap: the employer prefers {job.yearsPreferred}{" "}
+                  years of experience.
                 </p>
               )}
               {match.tier !== "strong" && (
                 <p className="rounded-xl bg-card p-3 text-[12px] leading-relaxed text-muted-foreground">
-                  You can still apply. These are the areas where strengthening your profile could
-                  improve your competitiveness.
+                  You can still apply. These are the areas where strengthening
+                  your profile could improve your competitiveness.
                 </p>
               )}
             </div>
@@ -167,10 +207,15 @@ export function JobDrawer({
                 Career gap impact
               </p>
               <p className="mt-2 text-[13px] leading-relaxed">
-                Learning <span className="font-semibold">{gapImpact.skill}</span> could lift your
-                strong matches from{" "}
-                <span className="font-semibold">{gapImpact.currentStrong}</span> to{" "}
-                <span className="font-semibold text-strong">{gapImpact.projectedStrong}</span>.
+                Learning{" "}
+                <span className="font-semibold">{gapImpact.skill}</span> could
+                lift your strong matches from{" "}
+                <span className="font-semibold">{gapImpact.currentStrong}</span>{" "}
+                to{" "}
+                <span className="font-semibold text-strong">
+                  {gapImpact.projectedStrong}
+                </span>
+                .
               </p>
               <Link
                 to="/career-gap"
@@ -227,12 +272,18 @@ export function JobDrawer({
                     className="flex w-full items-center gap-3 py-2.5 text-left transition-opacity hover:opacity-70"
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-[13px] font-medium">{n.title}</p>
+                      <p className="truncate text-[13px] font-medium">
+                        {n.title}
+                      </p>
                       <p className="truncate text-[12px] text-muted-foreground">
                         {n.company} · {n.suburb}
                       </p>
                     </div>
-                    <MatchBadge score={m.score} tier={m.tier} showLabel={false} />
+                    <MatchBadge
+                      score={m.score}
+                      tier={m.tier}
+                      showLabel={false}
+                    />
                   </button>
                 );
               })}

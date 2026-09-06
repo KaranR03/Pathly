@@ -26,7 +26,9 @@ export function JobFloatingCard({
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <p className="truncate text-[15px] font-semibold">{job.title}</p>
-          <p className="truncate text-[13px] text-muted-foreground">{job.company}</p>
+          <p className="truncate text-[13px] text-muted-foreground">
+            {job.company}
+          </p>
           <p className="truncate text-[12px] text-muted-foreground">
             {job.suburb} {job.state}
           </p>
@@ -71,18 +73,27 @@ export function JobFloatingCard({
               Skills to strengthen
             </p>
             <div className="flex flex-wrap gap-1.5">
-              {[...match.missing, ...match.missingPreferred].slice(0, 4).map((s) => (
-                <span key={s} className="rounded-full bg-secondary px-2 py-0.5 text-muted-foreground">
-                  {s}
-                </span>
-              ))}
+              {[...match.missing, ...match.missingPreferred]
+                .slice(0, 4)
+                .map((s) => (
+                  <span
+                    key={s}
+                    className="rounded-full bg-secondary px-2 py-0.5 text-muted-foreground"
+                  >
+                    {s}
+                  </span>
+                ))}
             </div>
           </div>
         )}
       </div>
 
       <div className="mt-4 flex items-center gap-2">
-        <Button size="sm" className="flex-1 rounded-full" onClick={onOpenDetails}>
+        <Button
+          size="sm"
+          className="flex-1 rounded-full"
+          onClick={onOpenDetails}
+        >
           View job
         </Button>
         <Button
@@ -90,6 +101,11 @@ export function JobFloatingCard({
           variant="secondary"
           className="rounded-full"
           onClick={() => {
+            if (job.source === "employer") {
+              // Real employer-posted jobs require the verified-apply flow in the job detail drawer.
+              onOpenDetails();
+              return;
+            }
             setStage(job.id, TRACKING_STAGE);
             toast.success("Added to your tracker", {
               description: `${job.title} · ${job.company}`,
@@ -105,7 +121,11 @@ export function JobFloatingCard({
           className="rounded-full"
           onClick={() => toggleSaved(job.id)}
         >
-          {saved ? <BookmarkCheck className="size-4" /> : <Bookmark className="size-4" />}
+          {saved ? (
+            <BookmarkCheck className="size-4" />
+          ) : (
+            <Bookmark className="size-4" />
+          )}
         </Button>
       </div>
       <Link

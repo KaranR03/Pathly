@@ -1,5 +1,6 @@
 import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -18,9 +19,19 @@ export function BackBar({
   floating?: boolean;
 }) {
   const router = useRouter();
-  const canGoBack = useRouterState({
-    select: (s) => s.location.state.__TSR_index !== undefined && s.location.state.__TSR_index > 0,
+  const historyCanGoBack = useRouterState({
+    select: (s) =>
+      s.location.state.__TSR_index !== undefined &&
+      s.location.state.__TSR_index > 0,
   });
+  // Real browser history state can already be non-zero on the client (e.g. after
+  // repeated navigations in the same tab) while SSR always computes it fresh —
+  // deferring to post-mount avoids a hydration mismatch that would otherwise
+  // force React to discard this whole route's client state (any open
+  // dialogs/sheets included).
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const canGoBack = mounted && historyCanGoBack;
 
   const base = cn(
     "inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background/85 px-3 py-1.5 text-[13px] font-medium text-muted-foreground shadow-sm backdrop-blur transition-colors hover:text-foreground",
@@ -30,7 +41,12 @@ export function BackBar({
 
   if (canGoBack) {
     return (
-      <button type="button" onClick={() => router.history.back()} className={base} aria-label="Go back">
+      <button
+        type="button"
+        onClick={() => router.history.back()}
+        className={base}
+        aria-label="Go back"
+      >
         <ArrowLeft className="size-4" />
         Back
       </button>
@@ -38,7 +54,11 @@ export function BackBar({
   }
 
   return (
-    <Link to={fallbackTo} className={base} aria-label={`Back to ${fallbackLabel}`}>
+    <Link
+      to={fallbackTo}
+      className={base}
+      aria-label={`Back to ${fallbackLabel}`}
+    >
       <ArrowLeft className="size-4" />
       {fallbackLabel}
     </Link>

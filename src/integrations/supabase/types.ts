@@ -38,6 +38,137 @@ export type Database = {
         }
         Relationships: []
       }
+      employer_jobs: {
+        Row: {
+          arrangement: string
+          city: string
+          company: string
+          company_size: string
+          created_at: string
+          description: string
+          experience: string
+          id: string
+          industry: string
+          job_type: string
+          lat: number
+          lng: number
+          owner_id: string
+          preferred: string[]
+          required: string[]
+          salary_max: number
+          salary_min: number
+          state: string
+          suburb: string
+          title: string
+          updated_at: string
+          years_preferred: number
+        }
+        Insert: {
+          arrangement: string
+          city: string
+          company: string
+          company_size: string
+          created_at?: string
+          description: string
+          experience: string
+          id?: string
+          industry: string
+          job_type: string
+          lat: number
+          lng: number
+          owner_id: string
+          preferred?: string[]
+          required?: string[]
+          salary_max: number
+          salary_min: number
+          state: string
+          suburb: string
+          title: string
+          updated_at?: string
+          years_preferred?: number
+        }
+        Update: {
+          arrangement?: string
+          city?: string
+          company?: string
+          company_size?: string
+          created_at?: string
+          description?: string
+          experience?: string
+          id?: string
+          industry?: string
+          job_type?: string
+          lat?: number
+          lng?: number
+          owner_id?: string
+          preferred?: string[]
+          required?: string[]
+          salary_max?: number
+          salary_min?: number
+          state?: string
+          suburb?: string
+          title?: string
+          updated_at?: string
+          years_preferred?: number
+        }
+        Relationships: []
+      }
+      job_applications: {
+        Row: {
+          applicant_id: string
+          applicant_name: string
+          created_at: string
+          github_username: string | null
+          id: string
+          job_id: string
+          linkedin_text: string | null
+          linkedin_url: string | null
+          resume_file_name: string
+          resume_skills: string[]
+          resume_years_experience: number | null
+          status: string
+          verification: Json
+        }
+        Insert: {
+          applicant_id: string
+          applicant_name: string
+          created_at?: string
+          github_username?: string | null
+          id?: string
+          job_id: string
+          linkedin_text?: string | null
+          linkedin_url?: string | null
+          resume_file_name: string
+          resume_skills?: string[]
+          resume_years_experience?: number | null
+          status?: string
+          verification?: Json
+        }
+        Update: {
+          applicant_id?: string
+          applicant_name?: string
+          created_at?: string
+          github_username?: string | null
+          id?: string
+          job_id?: string
+          linkedin_text?: string | null
+          linkedin_url?: string | null
+          resume_file_name?: string
+          resume_skills?: string[]
+          resume_years_experience?: number | null
+          status?: string
+          verification?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_applications_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "employer_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

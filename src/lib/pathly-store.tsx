@@ -23,6 +23,7 @@ import {
   createProfileForAccessMode,
   type Profile,
 } from "@/lib/profile-defaults";
+import { fetchAllEmployerJobs } from "@/lib/employer-db";
 
 export type { AppStage } from "@/lib/application-stages";
 
@@ -71,6 +72,7 @@ interface Ctx {
   jobs: Job[];
   employerJobs: Job[];
   addEmployerJob: (job: Job) => void;
+  refreshEmployerJobs: () => Promise<void>;
   filters: Filters;
   setFilters: (patch: Partial<Filters>) => void;
   resetFilters: () => void;
@@ -120,6 +122,7 @@ export function PathlyProvider({ children }: { children: ReactNode }) {
     createProfileForAccessMode("anonymous"),
   );
   const [employerJobs, setEmployerJobs] = useState<Job[]>([]);
+  const [dbJobs, setDbJobs] = useState<Job[]>([]);
   const [filters, setFiltersState] = useState<Filters>(EMPTY_FILTERS);
   const [simulatedSkill, setSimulatedSkill] = useState<string | null>(null);
   const [savedJobIds, setSavedJobIds] = useState<string[]>([]);
@@ -187,7 +190,26 @@ export function PathlyProvider({ children }: { children: ReactNode }) {
     recentlyViewed,
   ]);
 
-  const jobs = useMemo(() => [...employerJobs, ...JOBS], [employerJobs]);
+  const refreshEmployerJobs = useCallback(async () => {
+    setDbJobs(await fetchAllEmployerJobs());
+  }, []);
+
+  useEffect(() => {
+    if (!user || isGuest) {
+      setDbJobs([]);
+      return;
+    }
+    void refreshEmployerJobs();
+  }, [user, isGuest, refreshEmployerJobs]);
+
+  const jobs = useMemo(() => {
+    const dbIds = new Set(dbJobs.map((j) => j.id));
+    return [
+      ...dbJobs,
+      ...employerJobs.filter((j) => !dbIds.has(j.id)),
+      ...JOBS,
+    ];
+  }, [dbJobs, employerJobs]);
 
   const effectiveSkills = useMemo(
     () =>
@@ -354,6 +376,7 @@ export function PathlyProvider({ children }: { children: ReactNode }) {
     jobs,
     employerJobs,
     addEmployerJob: (job) => setEmployerJobs((e) => [job, ...e]),
+    refreshEmployerJobs,
     filters,
     setFilters: (patch) => setFiltersState((f) => ({ ...f, ...patch })),
     resetFilters: () => setFiltersState(EMPTY_FILTERS),

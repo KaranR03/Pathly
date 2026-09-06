@@ -1,9 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { formatSalary } from "@/lib/matching";
 import { usePathly, type AppStage } from "@/lib/pathly-store";
+import { useAuth } from "@/lib/auth";
+import { fetchMyApplications, type ApplicationRecord } from "@/lib/employer-db";
 import { AppShell } from "@/components/pathly/AppShell";
 import { MatchBadge } from "@/components/pathly/MatchBadge";
+import { cn } from "@/lib/utils";
 import {
   APPLICATION_PIPELINE_STAGES,
   APPLICATION_STAGES,
@@ -38,6 +42,15 @@ export const Route = createFileRoute("/applications")({
   component: ApplicationsPage,
 });
 
+const authenticityTier = (score: number) =>
+  score >= 75 ? "strong" : score >= 45 ? "potential" : "gap";
+
+const tierStyles: Record<string, string> = {
+  strong: "bg-strong-soft text-strong",
+  potential: "bg-potential-soft text-potential",
+  gap: "bg-gap-soft text-gap",
+};
+
 function ApplicationsPage() {
   const {
     applications,
@@ -48,6 +61,20 @@ function ApplicationsPage() {
     removeApplication,
     toggleSaved,
   } = usePathly();
+  const { user, isGuest } = useAuth();
+  const [verified, setVerified] = useState<Map<string, ApplicationRecord>>(
+    new Map(),
+  );
+
+  useEffect(() => {
+    if (!user || isGuest) {
+      setVerified(new Map());
+      return;
+    }
+    void fetchMyApplications(user.id).then((rows) => {
+      setVerified(new Map(rows.map((r) => [r.jobId, r])));
+    });
+  }, [user, isGuest]);
 
   const savedApplicationIds = applications
     .filter((application) => application.stage === "Saved")
@@ -149,6 +176,26 @@ function ApplicationsPage() {
                       {a.date && (
                         <p className="mt-0.5 text-[11px] text-muted-foreground">
                           Updated {a.date}
+                        </p>
+                      )}
+                      {verified.get(job.id)?.verification && (
+                        <p
+                          className={cn(
+                            "mt-2 inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold",
+                            tierStyles[
+                              authenticityTier(
+                                verified.get(job.id)!.verification!
+                                  .authenticityScore,
+                              )
+                            ],
+                          )}
+                        >
+                          Verified{" "}
+                          {
+                            verified.get(job.id)!.verification!
+                              .authenticityScore
+                          }
+                          %
                         </p>
                       )}
                       <div className="mt-2.5 flex items-center justify-between gap-2">
