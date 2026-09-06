@@ -38,6 +38,7 @@ export function JobDrawer({
     jobs,
     markViewed,
     gapAnalysis,
+    applications,
   } = usePathly();
   const [applyOpen, setApplyOpen] = useState(false);
 
@@ -45,6 +46,7 @@ export function JobDrawer({
   const match = matchFor(job);
   const saved = savedJobIds.includes(job.id);
   const isRealEmployerJob = job.source === "employer";
+  const isTracked = applications.some((a) => a.jobId === job.id);
   const missingAll = [...match.missing, ...match.missingPreferred];
   const nearby = jobs
     .filter((j) => j.id !== job.id && j.city === job.city)
@@ -90,26 +92,30 @@ export function JobDrawer({
           </div>
 
           <div className="mt-4 flex gap-2">
-            <Button
-              className="flex-1 rounded-full"
-              onClick={() => {
-                if (isRealEmployerJob) {
-                  setApplyOpen(true);
+            {!isRealEmployerJob && isTracked ? (
+              <Button className="flex-1 rounded-full" asChild>
+                <Link to="/applications">Track application</Link>
+              </Button>
+            ) : (
+              <Button
+                className="flex-1 rounded-full"
+                onClick={() => {
+                  if (isRealEmployerJob) {
+                    setApplyOpen(true);
+                    markViewed(job.id);
+                    return;
+                  }
+                  setStage(job.id, TRACKING_STAGE);
                   markViewed(job.id);
-                  return;
-                }
-                setStage(job.id, TRACKING_STAGE);
-                markViewed(job.id);
-                toast.success("Added to your tracker", {
-                  description:
-                    "Mark it as Applied after you submit through the employer.",
-                });
-              }}
-            >
-              {isRealEmployerJob
-                ? "Apply with verification"
-                : "Track application"}
-            </Button>
+                  toast.success("Applied — now tracking", {
+                    description:
+                      "Follow its progress from your Applications board.",
+                  });
+                }}
+              >
+                {isRealEmployerJob ? "Apply with verification" : "Apply now"}
+              </Button>
+            )}
             <Button
               variant="secondary"
               className="rounded-full"

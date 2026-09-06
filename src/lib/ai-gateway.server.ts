@@ -15,28 +15,56 @@ function stripCodeFence(text: string): string {
   return fenced ? fenced[1]!.trim() : trimmed;
 }
 
+// Free-tier model providers occasionally sit on a request for 30s+ before
+// failing (observed: Gemini's free tier returning 503 "high demand" after a
+// long hang). Fail fast with a clear message instead of leaving the upload
+// spinner stuck.
+const REQUEST_TIMEOUT_MS = 20_000;
+
+async function fetchWithTimeout(
+  url: string,
+  init: RequestInit,
+): Promise<Response> {
+  try {
+    return await fetch(url, {
+      ...init,
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    });
+  } catch (err) {
+    if (err instanceof Error && err.name === "TimeoutError") {
+      throw new Error(
+        "The AI is taking too long to respond. Please try again in a moment.",
+      );
+    }
+    throw err;
+  }
+}
+
 async function callOpenAI(
   system: string,
   user: string,
   apiKey: string,
 ): Promise<string> {
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
+  const res = await fetchWithTimeout(
+    "https://api.openai.com/v1/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: user },
+        ],
+        response_format: { type: "json_object" },
+      }),
     },
-    body: JSON.stringify({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: system },
-        { role: "user", content: user },
-      ],
-      response_format: { type: "json_object" },
-    }),
-  });
+  );
 
-  if (res.status === 429)
+  if (res.status === 429 || res.status === 503)
     throw new Error("AI is busy right now — please try again in a moment.");
   if (res.status === 401 || res.status === 403)
     throw new Error(
@@ -58,7 +86,7 @@ async function callAnthropic(
   user: string,
   apiKey: string,
 ): Promise<string> {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
+  const res = await fetchWithTimeout("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -73,7 +101,7 @@ async function callAnthropic(
     }),
   });
 
-  if (res.status === 429)
+  if (res.status === 429 || res.status === 503)
     throw new Error("AI is busy right now — please try again in a moment.");
   if (res.status === 401 || res.status === 403)
     throw new Error(
@@ -96,7 +124,7 @@ async function callGemini(
   apiKey: string,
 ): Promise<string> {
   const model = process.env["GEMINI_MODEL"] || "gemini-3.6-flash";
-  const res = await fetch(
+  const res = await fetchWithTimeout(
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
     {
       method: "POST",
@@ -110,7 +138,13 @@ async function callGemini(
   );
 
   if (res.status === 429)
-    throw new Error("AI is busy right now — please try again in a moment.");
+    throw new Error(
+      "The free Gemini quota for today has been used up. Try again later, or add OPENAI_API_KEY/ANTHROPIC_API_KEY for a higher limit.",
+    );
+  if (res.status === 503)
+    throw new Error(
+      "Gemini is overloaded right now — please try again in a moment.",
+    );
   if (res.status === 403)
     throw new Error("The Gemini API key is invalid or restricted.");
   if (!res.ok) throw new Error("The AI request failed. Please try again.");
@@ -129,7 +163,7 @@ async function callLovableGateway(
   user: string,
   apiKey: string,
 ): Promise<string> {
-  const res = await fetch(
+  const res = await fetchWithTimeout(
     "https://ai.gateway.lovable.dev/v1/chat/completions",
     {
       method: "POST",
@@ -148,7 +182,7 @@ async function callLovableGateway(
     },
   );
 
-  if (res.status === 429)
+  if (res.status === 429 || res.status === 503)
     throw new Error("AI is busy right now — please try again in a moment.");
   if (res.status === 402)
     throw new Error(

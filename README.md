@@ -53,6 +53,11 @@ CV upload uses AI to extract skills and experience. Inside Lovable this works au
 GEMINI_API_KEY=your-gemini-api-key
 ```
 
+The free Gemini tier is capped at 20 requests/day and can return 503s under
+load, which is enough for local dev but not for a live demo — set
+`OPENAI_API_KEY` or `ANTHROPIC_API_KEY` instead (same `.env`) for a higher
+limit when it matters.
+
 Then start the dev server:
 
 ```sh

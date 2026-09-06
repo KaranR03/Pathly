@@ -29,7 +29,10 @@ test("job actions track interest without claiming an application was submitted",
     assert.doesNotMatch(source, /setStage\(job\.id, "Applied"\)/);
     assert.match(source, /setStage\(job\.id, TRACKING_STAGE\)/);
   }
-  assert.doesNotMatch(drawer, />\s*Apply now\s*</);
+  // "Apply now" is the pre-tracking call to action; the button only reads
+  // "Track application" once the job is already in the user's tracker
+  // (a link to the Applications board, not a re-submission action).
+  assert.match(drawer, /"Apply now"/);
   assert.match(drawer, />\s*Track application\s*</);
 });
 
