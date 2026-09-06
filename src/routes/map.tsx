@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Layers, MapPin, Sparkles, X } from "lucide-react";
 import { useMemo, useState } from "react";
-import { AUSTRALIA_VIEW, CITIES } from "@/data/jobs";
 import { usePathly } from "@/lib/pathly-store";
 import { cn } from "@/lib/utils";
 import { AppShell } from "@/components/pathly/AppShell";
@@ -43,7 +42,6 @@ function MapPage() {
     simulatedSkill,
     setSimulatedSkill,
     filters,
-    setFilters,
     markViewed,
   } = usePathly();
   const [mode, setMode] = useState<"pins" | "heatmap">("pins");
@@ -120,7 +118,7 @@ function MapPage() {
               <div className="min-w-0 flex-1 sm:max-w-md">
                 <SearchBar onFocusCity={setFocus} />
               </div>
-              <FilterPanel />
+              <FilterPanel onFocusCity={setFocus} />
               <div className="glass hidden h-10 items-center gap-1 rounded-full p-1 sm:flex">
                 {(["pins", "heatmap"] as const).map((m) => (
                   <button
