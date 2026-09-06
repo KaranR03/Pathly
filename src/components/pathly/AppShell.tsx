@@ -111,7 +111,7 @@ export function AppShell({
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-40 border-b border-border/70 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex h-14 w-full max-w-[1600px] items-center gap-6 px-4 sm:px-6">
-          <Link to="/dashboard" className="shrink-0">
+          <Link to="/" className="shrink-0">
             <Wordmark />
           </Link>
           <nav className="hidden items-center gap-1 md:flex">
