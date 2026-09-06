@@ -83,6 +83,7 @@ export function interpretQuery(input: string): NlResult {
       " ",
     )
     .replace(new RegExp(CITIES.map((c) => c.name).join("|"), "gi"), " ")
+    .replace(/\b(qut|uq|griffith)\b/gi, " ")
     .replace(/[.?,]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
