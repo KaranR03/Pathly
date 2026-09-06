@@ -3025,5 +3025,187 @@ export const GENERATED_JOBS: Job[] = [
       "Scheduling"
     ],
     "description": "Supervise daily parcel sorting and delivery operations across a metropolitan distribution facility."
+  },
+
+  // --- Real listings scraped directly via the Firecrawl API (2026-09-06), ---
+  // --- targeting University of Adelaide's careers page.                   ---
+  // Genuine current postings; required/preferred skills were hand-corrected
+  // afterwards since automatic keyword inference produced overly generic
+  // results (no AI enrichment was available for this pass).
+  {
+    "id": "job-97",
+    "title": "Academic Tutor",
+    "company": "University of Adelaide",
+    "industry": "Education",
+    "suburb": "Adelaide",
+    "city": "Adelaide",
+    "state": "SA",
+    "lat": -34.945684,
+    "lng": 138.602848,
+    "salaryMin": 68000,
+    "salaryMax": 82000,
+    "jobType": "Full-time",
+    "arrangement": "On-site",
+    "experience": "Junior",
+    "yearsPreferred": 1,
+    "postedDaysAgo": 14,
+    "companySize": "Large",
+    "required": [
+      "Tutoring",
+      "Subject Matter Expertise",
+      "Student Engagement"
+    ],
+    "preferred": [
+      "Assessment Design",
+      "Communication"
+    ],
+    "description": "Support undergraduate students in small-group tutorials, marking assessments and providing feedback under the guidance of course coordinators."
+  },
+  {
+    "id": "job-98",
+    "title": "Senior Lecturer",
+    "company": "University of Adelaide",
+    "industry": "Education",
+    "suburb": "Adelaide",
+    "city": "Adelaide",
+    "state": "SA",
+    "lat": -34.936673,
+    "lng": 138.595322,
+    "salaryMin": 131000,
+    "salaryMax": 152000,
+    "jobType": "Full-time",
+    "arrangement": "On-site",
+    "experience": "Senior",
+    "yearsPreferred": 8,
+    "postedDaysAgo": 6,
+    "companySize": "Large",
+    "required": [
+      "Curriculum Development",
+      "Academic Research",
+      "Teaching & Learning",
+      "Grant Writing"
+    ],
+    "preferred": [
+      "Academic Publishing",
+      "Student Supervision"
+    ],
+    "description": "Lead course design and delivery within a faculty, supervise postgraduate students, and maintain an active research and publication track record."
+  },
+  {
+    "id": "job-99",
+    "title": "Senior Project Officer",
+    "company": "University of Adelaide",
+    "industry": "Education",
+    "suburb": "Adelaide",
+    "city": "Adelaide",
+    "state": "SA",
+    "lat": -34.931605,
+    "lng": 138.615699,
+    "salaryMin": 98000,
+    "salaryMax": 118000,
+    "jobType": "Full-time",
+    "arrangement": "On-site",
+    "experience": "Mid-level",
+    "yearsPreferred": 5,
+    "postedDaysAgo": 7,
+    "companySize": "Large",
+    "required": [
+      "Project Management",
+      "Stakeholder management",
+      "Report Writing"
+    ],
+    "preferred": [
+      "Budget Management",
+      "Risk Management"
+    ],
+    "description": "Coordinate cross-faculty research operations projects, tracking budgets, timelines and reporting to university leadership."
+  },
+  {
+    "id": "job-100",
+    "title": "Senior Project Officer",
+    "company": "University of Adelaide",
+    "industry": "Education",
+    "suburb": "Adelaide",
+    "city": "Adelaide",
+    "state": "SA",
+    "lat": -34.943914,
+    "lng": 138.582097,
+    "salaryMin": 96000,
+    "salaryMax": 116000,
+    "jobType": "Full-time",
+    "arrangement": "On-site",
+    "experience": "Mid-level",
+    "yearsPreferred": 5,
+    "postedDaysAgo": 12,
+    "companySize": "Large",
+    "required": [
+      "Project Management",
+      "Stakeholder management",
+      "Report Writing"
+    ],
+    "preferred": [
+      "Change Management",
+      "Event Coordination"
+    ],
+    "description": "Manage student experience improvement projects across departments, coordinating stakeholders and reporting on outcomes."
+  },
+  {
+    "id": "job-101",
+    "title": "Lecturer",
+    "company": "University of Adelaide",
+    "industry": "Education",
+    "suburb": "Adelaide",
+    "city": "Adelaide",
+    "state": "SA",
+    "lat": -34.937448,
+    "lng": 138.60537,
+    "salaryMin": 98000,
+    "salaryMax": 118000,
+    "jobType": "Full-time",
+    "arrangement": "On-site",
+    "experience": "Mid-level",
+    "yearsPreferred": 4,
+    "postedDaysAgo": 8,
+    "companySize": "Large",
+    "required": [
+      "Curriculum Development",
+      "Teaching & Learning",
+      "Academic Research"
+    ],
+    "preferred": [
+      "Academic Publishing",
+      "Communication"
+    ],
+    "description": "Deliver undergraduate and postgraduate teaching within a school, contributing to curriculum development and research output."
+  },
+  {
+    "id": "job-102",
+    "title": "Manager, Marketing and Communications",
+    "company": "University of Adelaide",
+    "industry": "Education",
+    "suburb": "Adelaide",
+    "city": "Adelaide",
+    "state": "SA",
+    "lat": -34.92353,
+    "lng": 138.589914,
+    "salaryMin": 129000,
+    "salaryMax": 150000,
+    "jobType": "Full-time",
+    "arrangement": "On-site",
+    "experience": "Senior",
+    "yearsPreferred": 7,
+    "postedDaysAgo": 8,
+    "companySize": "Large",
+    "required": [
+      "Marketing Strategy",
+      "Communications",
+      "Team Leadership",
+      "Stakeholder management"
+    ],
+    "preferred": [
+      "Brand Management",
+      "Digital Marketing"
+    ],
+    "description": "Lead the marketing and communications team, shaping brand strategy and stakeholder communications across the university."
   }
 ];
